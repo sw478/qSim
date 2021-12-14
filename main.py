@@ -20,10 +20,8 @@ GATE_S = "S"
 GATE_T = "T"
 GATE_CNOT = "C"
 GATE_TOFFOLI = "O"
-
-# Other printing constants
-PRINT_MEASUREMENT = "M"
-PRINT_NOTHING = "-"
+GATE_MEASUREMENT = "M"
+GATE_NOTHING = "-"
 
 # Gate matrices
 GATE_I_M = np.array(
@@ -101,13 +99,6 @@ class Sim:
     gates = {}
 
     """
-        time of measurement of qbits
-        
-        [i_qbit] = t
-    """
-    m_qbits = {}
-
-    """
         initializes the simulator with n_qbits qubits
             and n_cbits classical bits
     """
@@ -132,15 +123,14 @@ class Sim:
         self.max_t += 1
 
     """
-        adds a measurement for i_qbit
-        will overwrite older additions for each qbit
+        adds a measurement for i_qbit as a "gate"
     """
 
     def add_measurement(self, i_qbit):
         if i_qbit >= self.n_qbits:
             print("Cannot add measurement, invalid i_qbit: " + i_qbit)
 
-        self.m_qbits[i_qbit] = self.max_t
+        self.gates[self.max_t] = [[i_qbit], GATE_MEASUREMENT]
         self.max_t += 1
 
     def __check_valid_i_qbits(self, i_qbits):
@@ -171,28 +161,27 @@ class Sim:
 
     """
         ensure the simulator components are in a valid ordering
-        - no gates added after measurements
+        - no gates or measurements added after a measurement
     """
 
     def __validate_sim(self):
         invalid_qbits = []
 
         for i_qbit in range(self.n_qbits):
-            if i_qbit not in self.m_qbits.keys():
-                continue
+            measurement_found = False
 
-            qt = self.m_qbits[i_qbit]
-
-            for t in range(qt, self.max_t):
-                if t not in self.gates.keys():
-                    continue
-
+            for t in range(self.max_t):
                 gate = self.gates[t]
                 i_qbits = gate[0]
+                gate_label = gate[1]
 
                 if i_qbit in i_qbits:
-                    invalid_qbits.append(i_qbit)
-                    break
+                    if measurement_found:
+                        invalid_qbits.append(i_qbit)
+                        break
+
+                    if gate_label is GATE_MEASUREMENT:
+                        measurement_found = True
 
         self.__print_invalid_qbits(invalid_qbits)
         return len(invalid_qbits)
@@ -211,37 +200,20 @@ class Sim:
     def print_sim(self):
         for i_qbit in range(self.n_qbits):
             print("Q" + i_qbit.__repr__() + ": ", end="")
-
-            # no measurement
-            if i_qbit not in self.m_qbits.keys():
-                for t in range(self.max_t):
-                    self.__print_single_qbit_at_t(t, i_qbit)
-            else:
-                qt = self.m_qbits[i_qbit]
-
-                for t in range(qt):
-                    self.__print_single_qbit_at_t(t, i_qbit)
-
-                print(PRINT_MEASUREMENT, end="")
-
-                for t in range(qt + 1, self.max_t):
-                    self.__print_single_qbit_at_t(t, i_qbit)
-
+            for t in range(self.max_t):
+                self.__print_single_qbit_at_t(t, i_qbit)
             print("")
         print("")
 
     def __print_single_qbit_at_t(self, t, i_qbit):
-        if t not in self.gates.keys():
-            print(PRINT_NOTHING, end="")
-        else:
-            gate = self.gates[t]
-            i_qbits = gate[0]
-            gate_name = gate[1]
+        gate = self.gates[t]
+        i_qbits = gate[0]
+        gate_label = gate[1]
 
-            if i_qbit in i_qbits:
-                print(gate_name, end="")
-            else:
-                print(PRINT_NOTHING, end="")
+        if i_qbit in i_qbits:
+            print(gate_label, end="")
+        else:
+            print(GATE_NOTHING, end="")
 
 
 """
