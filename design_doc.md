@@ -65,7 +65,6 @@ To create a circuit:
     * When calling add_gate(), there is an option to print the full matrix used
 * Miscellaneous
     * Sims can be named
-    * Sims will have an option "for_testing", when set during testing, will cause print_*() call to not print and instead just return values
 
 ## Testing
 
@@ -78,3 +77,4 @@ Currently using several methods to debug:
 ## Future Work
 
 * Might add ability to use classical bits and operators/gates to enable combining multiple quantum circuits
+* Support conjugate transpose of a gate matrix as a modifier
