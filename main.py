@@ -3,46 +3,36 @@ import sys
 from gates import Gates
 from sim import Sim
 
+def sim_demo():
+    n_qbits = 3
+    sim = Sim(n_qbits, "Demo")
+
+    sim.add_gate(Gates.H([0], n_qbits))
+    sim.add_gate(Gates.H([1], n_qbits))
+    #sim.add_gate(Gates.GATE_H([2], n_qbits))
+
+    sim.add_gate(Gates.Toffoli([0, 1, 2], n_qbits))
+
+    sim.print_sim()
+    sim.print_prob_dist()
+    sim.print_statevector()
+
+
 # Bell State Simulation
 def sim_bell_state():
-    sim = Sim(2, "Bell State")
+    n_qbits = 2
+    sim = Sim(n_qbits, "Bell State")
 
-    sim.add_gate([0], Gates.H)
-    sim.add_gate([0, 1], Gates.CX)
+    sim.add_gate(Gates.H([0], n_qbits))
+    sim.add_gate(Gates.CX([0, 1], n_qbits))
 
     sim.print_sim()
     sim.print_prob_dist()
 
 
-"""
-    Representing a 4-bit CCC-Not gate with Toffoli gates
-    CCC-Not gate: Control: [0, 1, 2] -> Controlled: [3]
-    i_qbit [4] is an auxiliary qubit
-"""
-
-
-def sim_cccnot_with_toffoli():
-    sim = Sim(5, "CCC-Not gate with Toffoli gates")
-
-    sim.add_gate([0, 1, 4], Gates.TOFFOLI)
-    sim.add_gate([2, 4, 3], Gates.TOFFOLI)
-
-    sim.print_sim()
-
-def sim_debug():
-    sim = Sim(3, "Debug")
-    print("")
-
-    #sim.print_prob_dist()
-    #sim.print_statevector()
-
-    #sim.print_sim()
-
-
 def main():
     #sim_bell_state()
-    #sim_cccnot_with_toffoli()
-    sim_debug()
+    sim_demo()
 
 
 if __name__ == "__main__":

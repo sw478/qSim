@@ -1,5 +1,4 @@
 import numpy as np
-#import sim
 
 """
     gate_label: characters to be printed when circuit diagram is printed (not including the 'C's for control bits)
@@ -7,7 +6,6 @@ import numpy as np
         -LSB
         -includes control bits
     num_cb: number of control bits for this gate, control bits are the MSBs, only used for printing
-    num_args: number of arguments the gate is expecting
 """
 
 
@@ -27,13 +25,14 @@ class Gate:
 
 
 class Gate_Inst:
+    full_mat = None
 
     def __init__(self, gate, i_qbits, n_qbits):
         self.gate = gate
         self.i_qbits = i_qbits
         self.n_qbits = n_qbits
 
-        if Gates.check_size(gate.mat, i_qbits):
+        if not Gates.check_size(gate.mat, i_qbits):
             return
 
         # check values in i_qbits
@@ -44,11 +43,9 @@ class Gate_Inst:
         if not Gates.check_set(i_qbits):
             return
 
-
         self.full_mat = self.__get_full_mat()
 
     def __get_full_mat(self):
-
         # initial unswapped full matrix
         mat = [1]
         for i in range(self.n_qbits - len(self.i_qbits)):
@@ -137,234 +134,154 @@ class Gates:
     SQRT_H = 1 / np.sqrt(2)
     SQRT_E = 1 / np.sqrt(8)
 
-    # Gate labels
-    # 1 qubit
-    I = "I"
-    X = "X"
-    Y = "Y"
-    Z = "Z"
-    H = "H"
-    S = "S"
-    T = "T"
-    # 2 qubit
-    CX = "CX"
-    CY = "CY"
-    CZ = "CZ"
-    SWAP = "SW"
-    sqSWAP = "sqSW"
-    iSWAP = "iSW"
-    sqiSWAP = "sqiSW"
-    # 3 qubit
-    TOFFOLI = "Tof"
-    CSWAP = "CSW"
-
-    # Gate matrices
-    GATE_I_M = np.array(
-        [[1, 0],
-         [0, 1]])
-
-    GATE_X_M = np.array(
-        [[0, 1],
-         [1, 0]])
-
-    GATE_Y_M = np.array(
-        [[0, -1j],
-         [1j, 0]])
-
-    GATE_Z_M = np.array(
-        [[1, 0],
-         [0, -1]])
-
-    GATE_H_M = np.array(
-        [[SQRT_H, SQRT_H],
-         [SQRT_H, -SQRT_H]])
-
-    GATE_S_M = np.array(
-        [[1, 0],
-         [0, 1j]])
-
-    GATE_T_M = np.array(
-        [[1, 0],
-         [0, pow(np.e, np.pi * 1j / 4)]])
-
-    GATE_CX_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 0, 0, 1],
-         [0, 0, 1, 0],
-         [0, 1, 0, 0]])
-
-    GATE_CY_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 0, 0, -1j],
-         [0, 0, 1, 0],
-         [0, 1j, 0, 0]])
-
-    GATE_CZ_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 1, 0, 0],
-         [0, 0, 1, 0],
-         [0, 0, 0, -1]])
-
-    GATE_SWAP_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 0, 1, 0],
-         [0, 1, 0, 0],
-         [0, 0, 0, 1]],dtype=complex)
-
-    GATE_sqSWAP_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 0.5 + 0.5j, 0.5 - 0.5j, 0],
-         [0, 0.5 - 0.5j, 0.5 + 0.5j, 0],
-         [0, 0, 0, 1]])
-
-    GATE_iSWAP_M = np.array(
-        [[1, 0, 0, 0],
-         [0, 0, 1j, 0],
-         [0, 1j, 0, 0],
-         [0, 0, 0, 1]])
-
-    GATE_sqiSWAP_M = np.array(
-        [[1, 0, 0, 0],
-         [0, SQRT_H, SQRT_H * 1j, 0],
-         [0, SQRT_H * 1j, SQRT_H, 0],
-         [0, 0, 0, 1]])
-
-    GATE_TOFFOLI_M = np.array(
-        [[1, 0, 0, 0, 0, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0, 0, 0],
-         [0, 0, 1, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 0, 1],
-         [0, 0, 0, 0, 1, 0, 0, 0],
-         [0, 0, 0, 0, 0, 1, 0, 0],
-         [0, 0, 0, 0, 0, 0, 1, 0],
-         [0, 0, 0, 1, 0, 0, 0, 0]])
-
-    GATE_CSWAP_M = np.array(
-        [[1, 0, 0, 0, 0, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0, 0, 0],
-         [0, 0, 1, 0, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 1, 0, 0],
-         [0, 0, 0, 0, 1, 0, 0, 0],
-         [0, 0, 0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0, 1, 0],
-         [0, 0, 0, 0, 0, 0, 0, 1]])
-
-    gate_dict = {}
-    gate_dict[I] = GATE_I_M
-    gate_dict[X] = GATE_X_M
-    gate_dict[Y] = GATE_Y_M
-    gate_dict[Z] = GATE_Z_M
-    gate_dict[H] = GATE_H_M
-    gate_dict[S] = GATE_S_M
-    gate_dict[T] = GATE_T_M
-    gate_dict[CX] = GATE_CX_M
-    gate_dict[CY] = GATE_CY_M
-    gate_dict[CZ] = GATE_CZ_M
-    gate_dict[SWAP] = GATE_SWAP_M
-    gate_dict[sqSWAP] = GATE_sqSWAP_M
-    gate_dict[iSWAP] = GATE_iSWAP_M
-    gate_dict[sqiSWAP] = GATE_sqiSWAP_M
-    gate_dict[TOFFOLI] = GATE_TOFFOLI_M
-    gate_dict[CSWAP] = GATE_CSWAP_M
-
-    # number of character to print
-    gate_print = {}
-    gate_print[I] = 1
-    gate_print[X] = 1
-    gate_print[Y] = 1
-    gate_print[Z] = 1
-    gate_print[H] = 1
-    gate_print[S] = 1
-    gate_print[T] = 1
-    gate_print[CX] = 2
-    gate_print[CY] = 2
-    gate_print[CZ] = 2
-    gate_print[SWAP] = 2
-    gate_print[sqSWAP] = 4
-    gate_print[iSWAP] = 3
-    gate_print[sqiSWAP] = 5
-    gate_print[TOFFOLI] = 2
-    gate_print[CSWAP] = 3
-
-    # which gates have control/controlled qubits
-    # all qubits are control except last
-    gate_print_control = {}
-    gate_print_control[CX] = "X"
-    gate_print_control[CY] = "Y"
-    gate_print_control[CZ] = "Z"
-    gate_print_control[TOFFOLI] = "X"
-    gate_print_control[CSWAP] = "SW"
-
     @staticmethod
-    def GATE_I(i_qbits, n_qbits):
+    def I(i_qbits, n_qbits):
         gate = Gates.I_mat()
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_H(i_qbits, n_qbits):
+    def H(i_qbits, n_qbits):
         gate = Gates.H_mat()
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_X(i_qbits, n_qbits):
+    def X(i_qbits, n_qbits):
         gate = Gates.X_mat()
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_Y(i_qbits, n_qbits):
+    def Y(i_qbits, n_qbits):
         gate = Gates.Y_mat()
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_Z(i_qbits, n_qbits):
+    def Z(i_qbits, n_qbits):
         gate = Gates.Z_mat()
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_CX(i_qbits, n_qbits):
-        num_cb = 1
-        gate = Gates.X_mat()
-        gate = Gates.C_mat(gate, num_cb)
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def GATE_TOFFOLI(i_qbits, n_qbits):
-        num_cb = 2
-        gate = Gates.X_mat()
-        gate = Gates.C_mat(gate, num_cb)
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def GATE_P(i_qbits, n_qbits, theta):
+    def P(i_qbits, n_qbits, theta):
         gate = Gates.P_mat(theta)
-
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
     @staticmethod
-    def GATE_CP(i_qbits, n_qbits, theta):
-        num_cb = 1
+    def Rx(i_qbits, n_qbits, theta):
+        gate = Gates.Rx_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Ry(i_qbits, n_qbits, theta):
+        gate = Gates.Ry_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Rz(i_qbits, n_qbits, theta):
+        gate = Gates.Rz_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Rxx(i_qbits, n_qbits, theta):
+        gate = Gates.Rxx_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Ryy(i_qbits, n_qbits, theta):
+        gate = Gates.Ry_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Rzz(i_qbits, n_qbits, theta):
+        gate = Gates.Rz_mat(theta)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    """
+        Gates created with other matrices
+    """
+    @staticmethod
+    def S(i_qbits, n_qbits, dagger=False):
+        theta = -np.pi / 2
+
+        if not dagger:
+            gate = Gates.P_mat(theta, "S")
+        else:
+            gate = Gates.P_mat(-theta, "Sdg")
+
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def T(i_qbits, n_qbits, dagger=False):
+        theta = -np.pi / 4
+
+        if not dagger:
+            gate = Gates.P_mat(theta, "T")
+        else:
+            gate = Gates.P_mat(-theta, "Tdg")
+
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def CX(i_qbits, n_qbits):
+        gate = Gates.X_mat()
+        gate = Gates.C_mat(gate, num_cb=1)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def Toffoli(i_qbits, n_qbits):
+        gate = Gates.X_mat()
+        gate = Gates.C_mat(gate, num_cb=2)
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    @staticmethod
+    def CP(i_qbits, n_qbits, theta):
         gate = Gates.P_mat(theta)
-        gate = Gates.C_mat(gate, num_cb)
+        gate = Gates.C_mat(gate, num_cb=1)
+        return Gate_Inst(gate, i_qbits, n_qbits)
 
-        if Gates.check_size(gate.mat, i_qbits):
-            return Gate_Inst(gate, i_qbits, n_qbits)
+    @staticmethod
+    def Swap(i_qbits, n_qbits, imag=False, sqrt=False):
+        if imag and sqrt:
+            gate = Gates.irSwap_mat()
+        elif not imag and sqrt:
+            gate = Gates.rSwap_mat()
+        elif imag and not sqrt:
+            gate = Gates.iSwap_mat()
+        else:
+            gate = Gates.Swap_mat()
+
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    # sqrt X
+    @staticmethod
+    def rX(i_qbits, n_qbits):
+        gate = Gates.rX_mat()
+        return Gate_Inst(gate, i_qbits, n_qbits)
+
+    """
+        Gates generated from a Gate_Inst
+    """
+
+    # multi-controlled gate
+    @staticmethod
+    def MC(gate_inst, ctrl_bits):
+        num_cb = len(ctrl_bits)
+
+        if not Gates.check_set(ctrl_bits):
+            return
+
+        if not Gates.check_valid_i_qbits(ctrl_bits, gate_inst.n_qbits):
+            return
+
+        if num_cb < 1:
+            print("Error: Invalid number of control bits:")
+            return
+
+        gate = Gates.C_mat(gate_inst.full_mat, num_cb)
+
+        i_qbits = ctrl_bits + gate_inst.i_qbits
+        return Gate_Inst(gate, i_qbits, gate_inst.n_qbits)
 
 
+    # matrix definitions
     @staticmethod
     def I_mat():
         mat = np.eye(2)
@@ -403,8 +320,16 @@ class Gates:
         return Gates.P_mat(np.pi / 2, "S")
 
     @staticmethod
+    def Sdg_mat():
+        return Gates.P_mat(-np.pi / 2, "Sdg")
+
+    @staticmethod
     def T_mat():
         return Gates.P_mat(np.pi / 4, "T")
+
+    @staticmethod
+    def Tdg_mat():
+        return Gates.P_mat(np.pi / 4, "Tdg")
 
     @staticmethod
     def P_mat(theta, gate_label="P"):
@@ -413,6 +338,54 @@ class Gates:
              [0, np.exp(theta * 1j)]])
 
         return Gate(gate_label, mat, 0)
+
+    @staticmethod
+    def rX_mat():
+        mat = np.array(
+            [[0.5 + 0.5j, 0.5 - 0.5j],
+             [0.5 - 0.5j, 0.5 + 0.5j]])
+
+        return Gate("rX", mat, 0)
+
+    @staticmethod
+    def Swap_mat():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0, 1, 0],
+             [0, 1, 0, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("SW", mat, 0)
+
+    @staticmethod
+    def rSwap_mat():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0.5 + 0.5j, 0.5 - 0.5j, 0],
+             [0, 0.5 - 0.5j, 0.5 + 0.5j, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("rSW", mat, 0)
+
+    @staticmethod
+    def iSwap_mat():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0, 1j, 0],
+             [0, 1j, 0, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("iSW", mat, 0)
+
+    @staticmethod
+    def irSwap_mat():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, Gates.SQRT_H, 1j * Gates.SQRT_H, 0],
+             [0, 1j * Gates.SQRT_H, Gates.SQRT_H, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("irSW", mat, 0)
 
     @staticmethod
     def Rx_mat(theta):
@@ -483,12 +456,30 @@ class Gates:
 
         return Gate("Rzz", mat, 0)
 
-    # creates a controlled version of base_mat with num_cb number of control bits
+    # recursively creates a controlled version of gate.mat with num_cb number of control bits
     @staticmethod
     def C_mat(gate, num_cb):
-        base_n_qbits = np.log2(gate.mat.shape[0])
+        if num_cb == 0:
+            return gate
 
-        return gate
+        q_2 = gate.mat.shape[0]
+        q_1 = q_2 // 2
+        q_3 = q_2 * 3 // 2
+        q_4 = q_2 * 2
+
+        quads = [gate.mat[:q_1, :q_1], gate.mat[q_1:, :q_1], gate.mat[:q_1, q_1:], gate.mat[q_1:, q_1:]]
+
+        gate.mat = np.zeros(shape=(q_4,q_4))
+        gate.mat[0:q_1, 0:q_1] += np.eye(q_1)
+        gate.mat[q_2:q_3, q_2:q_3] += np.eye(q_1)
+
+        gate.mat[q_1:q_2, q_1:q_2] += quads[0]
+        gate.mat[q_3:q_4, q_1:q_2] += quads[1]
+        gate.mat[q_1:q_2, q_3:q_4] += quads[2]
+        gate.mat[q_3:q_4, q_3:q_4] += quads[3]
+
+        gate.num_cb += 1
+        return Gates.C_mat(gate, num_cb - 1)
 
     @staticmethod
     def check_size(mat, i_qbits):
@@ -518,10 +509,10 @@ class Gates:
         return True
 
     @staticmethod
-    def print_gate_2(gate_inst, i_qbit):
+    def print_gate(gate_inst, i_qbit):
         num_chars = len(gate_inst.gate.gate_label)
 
-        if i_qbit not in i_qbit:
+        if i_qbit not in gate_inst.i_qbits:
             [print(" ", end="") for i in range(num_chars)]
             if gate_inst.gate.num_cb > 0:
                 print(" ", end="")
@@ -532,26 +523,6 @@ class Gates:
             print("C", end="")
             [print(" ", end="") for i in range(num_chars)]
         else:
-            print(" " + gate_inst.gate.gate_label, end="")
-
-
-    @staticmethod
-    def print_gate(gate_label, i_qbits, i_qbit):
-        num_chars = Gates.gate_print[gate_label]
-
-        if i_qbit not in i_qbits:
-            [print(" ", end="") for i in range(num_chars)]
-            return
-
-        if num_chars == 1:
-            print(f'{gate_label:1}', end="")
-        elif num_chars == 2:
-            if gate_label in Gates.gate_print_control:
-                if i_qbit == i_qbits[len(i_qbits) - 1]:
-                    print(f' {Gates.gate_print_control[gate_label]:1}', end="")
-                else:
-                    print("C ", end="")
-            else:
-                print(gate_label, end="")
-        else:
-            print(gate_label, end="")
+            if gate_inst.gate.num_cb > 0:
+                print(" ", end="")
+            print(gate_inst.gate.gate_label, end="")
