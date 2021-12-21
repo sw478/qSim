@@ -25,8 +25,7 @@ This will be mainly used as practice for coding and as a learning experience for
         * Multi-controlled and multi-targeted gates
     * Custom gates:
         * Gates created from the current gates in a Sim
-        * For black boxes / oracles
-        * When printing as a gate within a sim, will print as a single gate
+        * When printing as a gate within a sim, print as a single gate
             * A printout similar to the Sim printout can be printed separately
 * Support custom qubit ordering for many-bit gates
 * Doesn't need to support simulating measurements

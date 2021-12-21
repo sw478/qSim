@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import pytest
-from gates import Gates
+from gates import Gates, Gate_Inst, Gate
 from sim import Sim
 
 margin = 0.000000001
@@ -10,7 +10,8 @@ def test_gates():
     print("")
     n_qbits = 3
     i_qbits = [2]
-    gate_inst = Gates.X(i_qbits, n_qbits)
+    gate = Gates.X()
+    gate_inst = Gate_Inst(gate, i_qbits, n_qbits)
 
     base_mat = gate_inst.gate.mat
     expected = np.array([[0, 1], [1, 0]])
@@ -33,7 +34,8 @@ def test_gates_with_args():
     n_qbits = 3
     i_qbits = [2]
     theta = np.pi / 2
-    gate_inst = Gates.P(i_qbits, n_qbits, theta)
+    gate = Gates.P(theta)
+    gate_inst = Gate_Inst(gate, i_qbits, n_qbits)
 
     base_mat = gate_inst.gate.mat
     expected = np.array([[1, 0], [0, 1j]])
@@ -44,11 +46,11 @@ def test_controlled_gates():
     sim = Sim(n_qbits, "Test: Controlled Gates", True)
     print("")
 
-    sim.add_gate(Gates.H([0], n_qbits))
-    sim.add_gate(Gates.H([1], n_qbits))
+    sim.add_gate(Gates.H(), [0])
+    sim.add_gate(Gates.H(), [1])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
 
-    sim.add_gate(Gates.Toffoli([0, 1, 2], n_qbits))
+    sim.add_gate(Gates.Toffoli(), [0, 1, 2])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0, 0, 0, 0, 0.5])
 
 
@@ -57,22 +59,26 @@ def test_statevector():
     sim = Sim(n_qbits, "Test: Statevector", True)
     print("")
 
-    sim.add_gate(Gates.H([0], n_qbits))
-    sim.add_gate(Gates.H([1], n_qbits))
+    sim.add_gate(Gates.H(), [0])
+    sim.add_gate(Gates.H(), [1])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
 
-    sim.add_gate(Gates.Toffoli([0, 1, 2], n_qbits))
+    sim.add_gate(Gates.Toffoli(), [0, 1, 2])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0, 0, 0, 0, 0.5])
 
-    sim.add_gate(Gates.Swap([1, 2], n_qbits))
+    sim.add_gate(Gates.Swap(), [1, 2])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0, 0, 0.5, 0, 0, 0.5])
 
-    sim.add_gate(Gates.H([2], n_qbits))
+    sim.add_gate(Gates.H(), [2])
     assert_arrays(sim.print_statevector(), [Gates.SQRT_H, Gates.SQRT_E, 0, Gates.SQRT_E, 0, Gates.SQRT_E, 0, -Gates.SQRT_E])
 
-    sim.add_gate(Gates.Z([0], n_qbits))
-    sim.add_gate(Gates.S([1], n_qbits))
-    sim.add_gate(Gates.T([2], n_qbits))
+    sim.add_gate(Gates.Z(), [0])
+    assert_arrays(sim.print_statevector(), [Gates.SQRT_H, -Gates.SQRT_E, 0, -Gates.SQRT_E, 0, -Gates.SQRT_E, 0, Gates.SQRT_E])
+
+    sim.add_gate(Gates.S(), [1])
+    assert_arrays(sim.print_statevector(), [Gates.SQRT_H, -Gates.SQRT_E, 0, -1j * Gates.SQRT_E, 0, -Gates.SQRT_E, 0, 1j * Gates.SQRT_E])
+
+    sim.add_gate(Gates.T(), [2])
     assert_arrays(sim.print_statevector(), [Gates.SQRT_H, -Gates.SQRT_E, 0, -Gates.SQRT_E * 1j, 0, -0.25 - 0.25j, 0, -0.25 + 0.25j])
 
     sim.print_sim()
@@ -82,10 +88,10 @@ def test_bell_state():
     sim = Sim(n_qbits, "Test: Bell State", True)
     print("")
 
-    sim.add_gate(Gates.H([0], n_qbits))
+    sim.add_gate(Gates.H(), [0])
     assert_arrays(sim.print_statevector(), [Gates.SQRT_H, Gates.SQRT_H, 0, 0])
 
-    sim.add_gate(Gates.CX([0, 1], n_qbits))
+    sim.add_gate(Gates.CX(), [0, 1])
     assert_arrays(sim.print_statevector(), [Gates.SQRT_H, 0, 0, Gates.SQRT_H])
 
     sim.print_sim()
@@ -95,10 +101,10 @@ def test_hadamard():
     sim = Sim(n_qbits, "Test: Hadamard", True)
     print("")
 
-    sim.add_gate(Gates.H([0], n_qbits))
+    sim.add_gate(Gates.H(), [0])
     assert_arrays(sim.print_statevector(), [Gates.SQRT_H, Gates.SQRT_H, 0, 0])
 
-    sim.add_gate(Gates.H([1], n_qbits))
+    sim.add_gate(Gates.H(), [1])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5])
 
     sim.print_sim()
@@ -108,11 +114,11 @@ def test_3():
     sim = Sim(n_qbits, "Test 3", True)
     print("")
 
-    sim.add_gate(Gates.H([0], n_qbits))
-    sim.add_gate(Gates.H([1], n_qbits))
+    sim.add_gate(Gates.H(), [0])
+    sim.add_gate(Gates.H(), [1])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
 
-    sim.add_gate(Gates.CX([1, 2], n_qbits))
+    sim.add_gate(Gates.CX(), [1, 2])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0, 0, 0, 0, 0.5, 0.5])
 
     sim.print_sim()

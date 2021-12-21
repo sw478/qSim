@@ -1,5 +1,5 @@
 import numpy as np
-from gates import Gates, Gate_Inst
+from gates import Gates, Gate_Inst, Gate
 
 """
     All qubits are initialized to the 0 state [1, 0] at the start
@@ -12,45 +12,28 @@ from gates import Gates, Gate_Inst
 
 class Sim:
 
-    # statevector of qubits
-    qbits = np.array([], dtype=complex)
-
-    """
-        initializes the simulator with n_qbits qubits
-            and n_cbits classical bits
-    """
-
+    # initializes the simulator with n_qbits qubits
     def __init__(self, n_qbits, name="", for_testing=False):
         self.n_qbits = n_qbits
         self.name = name
         self.for_testing = for_testing
 
-        """
-            list of gates
-            entries: [i_qbits, gate]
-        """
+        # list of gates
         self.gates = []
 
-        """
-            statevector of all qubits
-            initialize all qubits to 0
-        """
-        self.qbits = np.zeros(1 << n_qbits, dtype=complex)
-        self.qbits[0] = 1
+        # matrix if turning sim into gate
+        self.as_gate = np.eye(1 << n_qbits, dtype=complex)
 
-    """
-        adds the gate to the simulator with the qbits listed in i_qbits
-        evaluates the resulting matrix with the statevector
-    """
-
-    def add_gate(self, gate_inst):
+    # adds the gate and evaluates the resulting sim as a matrix
+    def add_gate(self, gate, i_qbits):
+        gate_inst = Gate_Inst(gate, i_qbits, self.n_qbits)
         self.gates += [gate_inst]
-        self.qbits = np.matmul(self.qbits, gate_inst.full_mat)
+        self.as_gate = np.matmul(self.as_gate, gate_inst.full_mat)
 
-    """
-        prints the quantum algorithm for this sim
-    """
+    def turn_into_gate(self, gate_label="G"):
+        return Gate(gate_label, self.as_gate, 0, self.gates)
 
+    # prints the quantum algorithm for this sim
     def print_sim(self):
         print("[Circuit Diagram] " + self.name)
 
@@ -66,14 +49,21 @@ class Sim:
         print("")
 
     def print_statevector(self):
+        statevector = np.zeros(1 << self.n_qbits, dtype=complex)
+        statevector[0] = 1
+        statevector = np.matmul(statevector, self.as_gate)
+
         if not self.for_testing:
             print("[Statevector] " + self.name)
-            print(self.qbits, end="\n\n")
+            print(statevector, end="\n\n")
 
-        return self.qbits
+        return statevector
 
     def print_prob_dist(self):
-        prob_dist = (self.qbits ** 2).real
+        statevector = np.zeros(1 << self.n_qbits, dtype=complex)
+        statevector[0] = 1
+        statevector = np.matmul(statevector, self.as_gate)
+        prob_dist = (statevector ** 2).real
 
         if not self.for_testing:
             print("[Probability Dist.] " + self.name)

@@ -11,10 +11,11 @@ import numpy as np
 
 class Gate:
 
-    def __init__(self, gate_label, mat, num_cb):
+    def __init__(self, gate_label, mat, num_cb, subgates=None):
         self.gate_label = gate_label
         self.mat = mat
         self.num_cb = num_cb
+        self.subgates = subgates
 
 """
     Instance of a gate in a Sim or a custom gate
@@ -135,160 +136,12 @@ class Gates:
     SQRT_E = 1 / np.sqrt(8)
 
     @staticmethod
-    def I(i_qbits, n_qbits):
-        gate = Gates.I_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def H(i_qbits, n_qbits):
-        gate = Gates.H_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def X(i_qbits, n_qbits):
-        gate = Gates.X_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Y(i_qbits, n_qbits):
-        gate = Gates.Y_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Z(i_qbits, n_qbits):
-        gate = Gates.Z_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def P(i_qbits, n_qbits, theta):
-        gate = Gates.P_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Rx(i_qbits, n_qbits, theta):
-        gate = Gates.Rx_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Ry(i_qbits, n_qbits, theta):
-        gate = Gates.Ry_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Rz(i_qbits, n_qbits, theta):
-        gate = Gates.Rz_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Rxx(i_qbits, n_qbits, theta):
-        gate = Gates.Rxx_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Ryy(i_qbits, n_qbits, theta):
-        gate = Gates.Ry_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Rzz(i_qbits, n_qbits, theta):
-        gate = Gates.Rz_mat(theta)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    """
-        Gates created with other matrices
-    """
-    @staticmethod
-    def S(i_qbits, n_qbits, dagger=False):
-        theta = -np.pi / 2
-
-        if not dagger:
-            gate = Gates.P_mat(theta, "S")
-        else:
-            gate = Gates.P_mat(-theta, "Sdg")
-
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def T(i_qbits, n_qbits, dagger=False):
-        theta = -np.pi / 4
-
-        if not dagger:
-            gate = Gates.P_mat(theta, "T")
-        else:
-            gate = Gates.P_mat(-theta, "Tdg")
-
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def CX(i_qbits, n_qbits):
-        gate = Gates.X_mat()
-        gate = Gates.C_mat(gate, num_cb=1)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Toffoli(i_qbits, n_qbits):
-        gate = Gates.X_mat()
-        gate = Gates.C_mat(gate, num_cb=2)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def CP(i_qbits, n_qbits, theta):
-        gate = Gates.P_mat(theta)
-        gate = Gates.C_mat(gate, num_cb=1)
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    @staticmethod
-    def Swap(i_qbits, n_qbits, imag=False, sqrt=False):
-        if imag and sqrt:
-            gate = Gates.irSwap_mat()
-        elif not imag and sqrt:
-            gate = Gates.rSwap_mat()
-        elif imag and not sqrt:
-            gate = Gates.iSwap_mat()
-        else:
-            gate = Gates.Swap_mat()
-
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    # sqrt X
-    @staticmethod
-    def rX(i_qbits, n_qbits):
-        gate = Gates.rX_mat()
-        return Gate_Inst(gate, i_qbits, n_qbits)
-
-    """
-        Gates generated from a Gate_Inst
-    """
-
-    # multi-controlled gate
-    @staticmethod
-    def MC(gate_inst, ctrl_bits):
-        num_cb = len(ctrl_bits)
-
-        if not Gates.check_set(ctrl_bits):
-            return
-
-        if not Gates.check_valid_i_qbits(ctrl_bits, gate_inst.n_qbits):
-            return
-
-        if num_cb < 1:
-            print("Error: Invalid number of control bits:")
-            return
-
-        gate = Gates.C_mat(gate_inst.full_mat, num_cb)
-
-        i_qbits = ctrl_bits + gate_inst.i_qbits
-        return Gate_Inst(gate, i_qbits, gate_inst.n_qbits)
-
-
-    # matrix definitions
-    @staticmethod
-    def I_mat():
+    def I():
         mat = np.eye(2)
         return Gate("I", mat, 0)
 
     @staticmethod
-    def H_mat():
+    def H():
         mat = np.array(
             [[Gates.SQRT_H, Gates.SQRT_H],
              [Gates.SQRT_H, -Gates.SQRT_H]])
@@ -296,7 +149,7 @@ class Gates:
         return Gate("H", mat, 0)
 
     @staticmethod
-    def X_mat():
+    def X():
         mat = np.array(
             [[0, 1],
              [1, 0]])
@@ -304,7 +157,7 @@ class Gates:
         return Gate("X", mat, 0)
 
     @staticmethod
-    def Y_mat():
+    def Y():
         mat = np.array(
             [[0, -1j],
              [1j, 0]])
@@ -312,27 +165,11 @@ class Gates:
         return Gate("Y", mat, 0)
 
     @staticmethod
-    def Z_mat():
-        return Gates.P_mat(np.pi, "Z")
+    def Z():
+        return Gates.P(np.pi, "Z")
 
     @staticmethod
-    def S_mat():
-        return Gates.P_mat(np.pi / 2, "S")
-
-    @staticmethod
-    def Sdg_mat():
-        return Gates.P_mat(-np.pi / 2, "Sdg")
-
-    @staticmethod
-    def T_mat():
-        return Gates.P_mat(np.pi / 4, "T")
-
-    @staticmethod
-    def Tdg_mat():
-        return Gates.P_mat(np.pi / 4, "Tdg")
-
-    @staticmethod
-    def P_mat(theta, gate_label="P"):
+    def P(theta, gate_label="P"):
         mat = np.array(
             [[1, 0],
              [0, np.exp(theta * 1j)]])
@@ -340,55 +177,7 @@ class Gates:
         return Gate(gate_label, mat, 0)
 
     @staticmethod
-    def rX_mat():
-        mat = np.array(
-            [[0.5 + 0.5j, 0.5 - 0.5j],
-             [0.5 - 0.5j, 0.5 + 0.5j]])
-
-        return Gate("rX", mat, 0)
-
-    @staticmethod
-    def Swap_mat():
-        mat = np.array(
-            [[1, 0, 0, 0],
-             [0, 0, 1, 0],
-             [0, 1, 0, 0],
-             [0, 0, 0, 1]])
-
-        return Gate("SW", mat, 0)
-
-    @staticmethod
-    def rSwap_mat():
-        mat = np.array(
-            [[1, 0, 0, 0],
-             [0, 0.5 + 0.5j, 0.5 - 0.5j, 0],
-             [0, 0.5 - 0.5j, 0.5 + 0.5j, 0],
-             [0, 0, 0, 1]])
-
-        return Gate("rSW", mat, 0)
-
-    @staticmethod
-    def iSwap_mat():
-        mat = np.array(
-            [[1, 0, 0, 0],
-             [0, 0, 1j, 0],
-             [0, 1j, 0, 0],
-             [0, 0, 0, 1]])
-
-        return Gate("iSW", mat, 0)
-
-    @staticmethod
-    def irSwap_mat():
-        mat = np.array(
-            [[1, 0, 0, 0],
-             [0, Gates.SQRT_H, 1j * Gates.SQRT_H, 0],
-             [0, 1j * Gates.SQRT_H, Gates.SQRT_H, 0],
-             [0, 0, 0, 1]])
-
-        return Gate("irSW", mat, 0)
-
-    @staticmethod
-    def Rx_mat(theta):
+    def Rx(theta):
         theta_2 = theta * 0.5
         mat = np.array(
             [[np.cos(theta_2), np.sin(theta_2) * -1j],
@@ -397,7 +186,7 @@ class Gates:
         return Gate("Rx", mat, 0)
 
     @staticmethod
-    def Ry_mat(theta):
+    def Ry(theta):
         theta_2 = theta * 0.5
         mat = np.array(
             [[np.cos(theta_2), np.sin(theta_2) * -1],
@@ -406,7 +195,7 @@ class Gates:
         return Gate("Ry", mat, 0)
 
     @staticmethod
-    def Rz_mat(theta):
+    def Rz(theta):
         theta_2 = theta * 0.5
         mat = np.array(
             [[np.exp(-1j * theta_2), 0],
@@ -415,7 +204,7 @@ class Gates:
         return Gate("Rz", mat, 0)
 
     @staticmethod
-    def Rxx_mat(theta):
+    def Rxx(theta):
         theta_2 = theta * 0.5
         cos_theta_2 = np.cos(theta_2)
         isin_theta_2_neg = -1j * np.sin(theta_2)
@@ -429,7 +218,7 @@ class Gates:
         return Gate("Rxx", mat, 0)
 
     @staticmethod
-    def Ryy_mat(theta):
+    def Ryy(theta):
         theta_2 = theta * 0.5
         cos_theta_2 = np.cos(theta_2)
         isin_theta_2_neg = -1j * np.sin(theta_2)
@@ -443,7 +232,7 @@ class Gates:
         return Gate("Ryy", mat, 0)
 
     @staticmethod
-    def Rzz_mat(theta):
+    def Rzz(theta):
         theta_2 = theta * 0.5
         e_theta_2 = np.exp(1j * theta_2)
         e_theta_2_neg = np.exp(-1j * theta_2)
@@ -456,9 +245,120 @@ class Gates:
 
         return Gate("Rzz", mat, 0)
 
+    """
+        Gates created with other matrices
+    """
+    @staticmethod
+    def S(dagger=False):
+        theta = np.pi / 2
+
+        if not dagger:
+            return Gates.P(theta, "S")
+        else:
+            return Gates.P(-theta, "Sdg")
+
+    @staticmethod
+    def T(dagger=False):
+        theta = np.pi / 4
+
+        if not dagger:
+            return Gates.P(theta, "T")
+        else:
+            return Gates.P(-theta, "Tdg")
+
+    @staticmethod
+    def CX():
+        gate = Gates.X()
+        return Gates.C(gate, num_cb=1)
+
+    @staticmethod
+    def Toffoli():
+        gate = Gates.X()
+        return Gates.C(gate, num_cb=2)
+
+    @staticmethod
+    def CP(theta):
+        gate = Gates.P(theta)
+        return Gates.C(gate, num_cb=1)
+
+    @staticmethod
+    def Swap():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0, 1, 0],
+             [0, 1, 0, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("SW", mat, 0)
+
+    @staticmethod
+    def Swap_sqrt():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0.5 + 0.5j, 0.5 - 0.5j, 0],
+             [0, 0.5 - 0.5j, 0.5 + 0.5j, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("rSW", mat, 0)
+
+    @staticmethod
+    def Swap_i():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, 0, 1j, 0],
+             [0, 1j, 0, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("iSW", mat, 0)
+
+    @staticmethod
+    def Swap_sqrt_i():
+        mat = np.array(
+            [[1, 0, 0, 0],
+             [0, Gates.SQRT_H, 1j * Gates.SQRT_H, 0],
+             [0, 1j * Gates.SQRT_H, Gates.SQRT_H, 0],
+             [0, 0, 0, 1]])
+
+        return Gate("irSW", mat, 0)
+
+
+    # sqrt X
+    @staticmethod
+    def rX():
+        mat = np.array(
+            [[0.5 + 0.5j, 0.5 - 0.5j],
+             [0.5 - 0.5j, 0.5 + 0.5j]])
+
+        return Gate("rX", mat, 0)
+
+    """
+        Gates generated from a Gate_Inst
+    """
+
+    # multi-targeted gate for single bit gates
+    @staticmethod
+    def MT(gate_inst, ctrl_bits):
+        num_cb = len(ctrl_bits)
+
+        if not Gates.check_set(ctrl_bits):
+            return
+
+        if not Gates.check_valid_i_qbits(ctrl_bits, gate_inst.n_qbits):
+            return
+
+        if num_cb < 1:
+            print("Error: Invalid number of control bits:")
+            return
+
+        gate = Gates.C(gate_inst.full_mat, num_cb)
+
+        i_qbits = ctrl_bits + gate_inst.i_qbits
+        return Gate_Inst(gate, i_qbits, gate_inst.n_qbits)
+
+    # multi-controlled gate
     # recursively creates a controlled version of gate.mat with num_cb number of control bits
     @staticmethod
-    def C_mat(gate, num_cb):
+    def C(gate, num_cb):
         if num_cb == 0:
             return gate
 
@@ -479,7 +379,7 @@ class Gates:
         gate.mat[q_3:q_4, q_3:q_4] += quads[3]
 
         gate.num_cb += 1
-        return Gates.C_mat(gate, num_cb - 1)
+        return Gates.C(gate, num_cb - 1)
 
     @staticmethod
     def check_size(mat, i_qbits):

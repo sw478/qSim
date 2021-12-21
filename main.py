@@ -4,14 +4,12 @@ from gates import Gates
 from sim import Sim
 
 def sim_demo():
-    n_qbits = 3
-    sim = Sim(n_qbits, "Demo")
+    sim = Sim(3, "Demo")
 
-    sim.add_gate(Gates.H([0], n_qbits))
-    sim.add_gate(Gates.H([1], n_qbits))
-    #sim.add_gate(Gates.GATE_H([2], n_qbits))
+    sim.add_gate(Gates.H(), [0])
+    sim.add_gate(Gates.H(), [1])
 
-    sim.add_gate(Gates.Toffoli([0, 1, 2], n_qbits))
+    sim.add_gate(Gates.Toffoli(), [0, 1, 2])
 
     sim.print_sim()
     sim.print_prob_dist()
@@ -20,18 +18,18 @@ def sim_demo():
 
 # Bell State Simulation
 def sim_bell_state():
-    n_qbits = 2
-    sim = Sim(n_qbits, "Bell State")
+    sim = Sim(2, "Bell State")
 
-    sim.add_gate(Gates.H([0], n_qbits))
-    sim.add_gate(Gates.CX([0, 1], n_qbits))
+    sim.add_gate(Gates.H(), [0])
+    sim.add_gate(Gates.CX(), [0, 1])
 
     sim.print_sim()
     sim.print_prob_dist()
+    sim.print_statevector()
 
 
 def main():
-    #sim_bell_state()
+    sim_bell_state()
     sim_demo()
 
 
