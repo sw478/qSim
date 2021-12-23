@@ -3,6 +3,7 @@ import sys
 from gates import Gates
 from sim import Sim
 
+
 def sim_demo():
     sim = Sim(3, "Demo")
 

@@ -1,5 +1,11 @@
 import numpy as np
 
+swap_mat = np.array(
+    [[1, 0, 0, 0],
+     [0, 0, 1, 0],
+     [0, 1, 0, 0],
+     [0, 0, 0, 1]])
+
 """
     gate_label: characters to be printed when circuit diagram is printed (not including the 'C's for control bits)
     mat: gate matrix
@@ -65,7 +71,8 @@ class Gate_Inst:
             # check if list is in order
             for i in range(len(swap_goal)):
                 if swap_goal[i] is not swap_list[i]:
-                    Gate_Inst.reorder_matrix(mat, i, swap_list[i])
+                    #mat = Gate_Inst.reorder_matrix(mat, i, swap_list[i], self.n_qbits)
+                    mat = Gate_Inst.reorder_matrix_2(mat, i, swap_list[i], self.n_qbits)
 
                     # swap list values
                     temp = swap_list[i]
@@ -82,25 +89,52 @@ class Gate_Inst:
         enables custom qubit ordering for many-bit gates
     """
 
+
     @staticmethod
-    def reorder_matrix(mat, i_qbit, j_qbit):
+    def reorder_matrix_2(mat, i_qbit, j_qbit, n_qbits):
+        if i_qbit == j_qbit:
+            return mat
+
+        if i_qbit >= n_qbits or j_qbit >= n_qbits:
+            print("here")
+            return None
+
+        if i_qbit > j_qbit:
+            i_qbit, j_qbit = j_qbit, i_qbit
+
+        if Gates.preproc_size < n_qbits:
+            Gates.preproc_size, Gates.preproc = preprocess_swap(n_qbits)
+
+        full_swap_mat = Gates.preproc[i_qbit][j_qbit]
+
+        if Gates.preproc_size > n_qbits:
+            mat_size = 1 << n_qbits
+            full_swap_mat = full_swap_mat[0:mat_size, 0:mat_size]
+
+        mat = np.linalg.multi_dot([full_swap_mat, mat, full_swap_mat])
+
+        return mat
+
+    @staticmethod
+    def reorder_matrix(mat, i_qbit, j_qbit, n_qbits):
         if i_qbit == j_qbit:
             return
 
-        n_elements = mat.shape[0]
+        n_elements = 1 << n_qbits
 
-        if i_qbit | j_qbit > np.log2(n_elements):
+        if i_qbit | j_qbit >= n_qbits:
             return
 
-        #print("swapping qubits: [" + str(i_qbit) + " " + str(j_qbit) + "]")
+        #print("swapping: [" + str(i_qbit) + "][" + str(j_qbit) + "]")
 
-        # keep track of rows/cols already swapped
-        swap_list = [i for i in range(n_elements)]
-
+        mat_cpy = np.copy(mat)
         # ensures i < j for positive bit shift value
         if i_qbit > j_qbit:
             i_qbit, j_qbit = j_qbit, i_qbit
         shift = j_qbit - i_qbit
+
+        # keep track of rows/cols already swapped
+        swap_list = [i for i in range(n_elements)]
 
         # get row/col index (bit)
         i2 = 1 << i_qbit
@@ -123,17 +157,49 @@ class Gate_Inst:
 
             # check if matrix needs to be reordered
             if a ^ b:
-                # print("[" + str(i_qbit) + " " + str(j_qbit) + "] swapping: " + str(a) + " " + str(b))
-                mat[[a, b]] = mat[[b, a]]  # swap rows
-                mat[:, [a, b]] = mat[:, [b, a]]  # swap columns
+                #print("[" + str(i_qbit) + "][" + str(j_qbit) + "] swapping: " + str(a) + " " + str(b))
+                mat_cpy[[a, b]] = mat_cpy[[b, a]]  # swap rows
+                mat_cpy[:, [a, b]] = mat_cpy[:, [b, a]]  # swap columns
 
             swap_list.remove(a)
             swap_list.remove(b)
+        return mat_cpy
 
+def preprocess_swap(n_qbits):
+    mat_size=  1 << n_qbits
+    preproc = np.ndarray(shape=(n_qbits, n_qbits, mat_size, mat_size))
+
+    # [i][i+1] diagonal
+    for i in range(n_qbits - 1):
+        mat = [1]
+
+        for k in range(n_qbits):
+            if k == i + 1:
+                continue
+            elif k == i:
+                mat = np.kron(swap_mat, mat)
+            else:
+                mat = np.kron(np.eye(2), mat)
+
+        preproc[i][i+1] = mat
+        preproc[i+1][i] = mat
+
+    for j in range(2, n_qbits):
+        for i in range(j-2, -1, -1):
+            #print("[" + str(i) + "][" + str(j) + "]: [" + str(i+1) + "][" + str(j) + "] & [" + str(i) + "][" + str(i+1) + "]")
+            mat = np.matmul(preproc[i+1][j], preproc[i][i+1])
+            preproc[i][j] = np.matmul(preproc[i][i+1], mat)
+
+    return n_qbits, preproc
 
 class Gates:
     SQRT_H = 1 / np.sqrt(2)
     SQRT_E = 1 / np.sqrt(8)
+
+    # starting number of bits for swap preprocessing
+    # should be largest amount of qubits used
+    initial_n_qbits = 4
+    preproc_size, preproc = preprocess_swap(initial_n_qbits)
 
     @staticmethod
     def I():
@@ -283,12 +349,7 @@ class Gates:
 
     @staticmethod
     def Swap():
-        mat = np.array(
-            [[1, 0, 0, 0],
-             [0, 0, 1, 0],
-             [0, 1, 0, 0],
-             [0, 0, 0, 1]])
-
+        mat = swap_mat
         return Gate("SW", mat, 0)
 
     @staticmethod

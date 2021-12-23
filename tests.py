@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import pytest
-from gates import Gates, Gate_Inst, Gate
+from gates import Gates, Gate_Inst, Gate, preprocess_swap
 from sim import Sim
 
 margin = 0.000000001
@@ -122,6 +122,21 @@ def test_3():
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0, 0, 0, 0, 0.5, 0.5])
 
     sim.print_sim()
+
+def test_bit_order_swapping():
+    print("")
+    n_qbits = 4
+    mat_size = 1 << n_qbits
+    #preprocess_swap(5)
+    mat = [[i + j for i in range(mat_size)] for j in range(mat_size)]
+
+    for i in range(n_qbits - 1):
+        for j in range(i + 1, n_qbits):
+            #print("swapping: [" + str(i) + "][" + str(j) + "]")
+            mat1 = Gate_Inst.reorder_matrix(mat, i, j, n_qbits)
+            mat2 = Gate_Inst.reorder_matrix_2(mat, i, j, n_qbits)
+            assert_matrices(mat1, mat2)
+
 
 def assert_arrays(arr1, arr2):
     assert arr1 == pytest.approx(arr2, margin)
