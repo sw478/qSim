@@ -9,26 +9,21 @@ This will be mainly used as practice for coding and as a learning experience for
 
 * Create quantum circuits similar to online quantum computer simulators
 * Gates to support:
-    * Single bit:
+    * Basic gates:
         * Identity
         * Pauli (X, Y, Z)
         * Hadamard
         * Phase shift: (S, T, Sdg, Tdg)
-    * Many bit:
-        * Swap
-            * Variations: (sqrt, imaginary)
-        * Multi-target single bit gates
+        * Swap and variations: (sqrt, imaginary)
+    * Multi-targeted single bit gates
+    * Multi-controlled gates
     * Gates with arguments:
         * Phase shift gate
         * Rotational gates: (Rx, Ry, Rz)
         * Ising Coupling gates: (Rxx, Ryy, Rzz)
-    * Control gates:
-        * Ability to easily create a controlled version of an existing gate
-        * Multi-controlled gates
     * Custom gates:
         * Single gate created from the current gates in a Sim
 * Support custom qubit ordering for many-bit gates
-* Custom initial statevector
 * Doesn't need to support simulating measurements
     * Reason: Doesn't add much to the project
 * Printing features:
@@ -43,14 +38,14 @@ This will be mainly used as practice for coding and as a learning experience for
 ## Testing
 
 Types of testcases:
-    * Gate matrices (base, full) are correct when created with Gates
-    * Gate with arguments
-    * Control gates
-    * Custom gates
-    * Reordering matrix to LSB order
-    * Circuit printouts
-    * Statevector consistent with probability distribution in a Sim
-    * Correct statevector throughout a Sim
+* Gate matrices (base, full) are correct when created with Gates
+* Gate with arguments
+* Control gates
+* Custom gates
+* Reordering matrix to LSB order
+* Circuit printouts
+* Statevector consistent with probability distribution in a Sim
+* Correct statevector throughout a Sim
 
 ## Future Work
 

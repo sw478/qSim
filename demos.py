@@ -1,16 +1,17 @@
 import numpy as np
 import sys
-from gates import Gates
+from gate import Gate
 from sim import Sim
 
 
 def sim_demo():
     sim = Sim(3, "Demo")
 
-    sim.add_gate(Gates.H(), [0])
-    sim.add_gate(Gates.H(), [1])
-
-    sim.add_gate(Gates.Toffoli(), [0, 1, 2])
+    sim.add_gate(Gate.H(), [0])
+    sim.add_gate(Gate.H(), [1])
+    sim.add_gate(Gate.Toffoli(), [0, 1, 2])
+    sim.add_gate(Gate.Swap(), [1, 2])
+    sim.add_gate(Gate.H(), [2])
 
     sim.print_sim()
     sim.print_prob_dist()
@@ -21,8 +22,8 @@ def sim_demo():
 def sim_bell_state():
     sim = Sim(2, "Bell State")
 
-    sim.add_gate(Gates.H(), [0])
-    sim.add_gate(Gates.CX(), [0, 1])
+    sim.add_gate(Gate.H(), [0])
+    sim.add_gate(Gate.CX(), [0, 1])
 
     sim.print_sim()
     sim.print_prob_dist()
