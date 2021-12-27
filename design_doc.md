@@ -32,7 +32,6 @@ This will be mainly used as practice for coding and as a learning experience for
         * One gate per column
         * Differentiate control bits from the target bit(s)
         * When printing a custom gate within a printout, print as a single gate
-            * Option for printouts for gates within custom gates to be printed separately
     * Print current statevector or probability distribution
 
 ## Testing
@@ -50,5 +49,6 @@ Types of testcases:
 ## Future Work
 
 * Support for classical bits and gates
-* Support conjugate transpose of a gate matrix as a modifier
+* Support custom initial statevector in Sims
+* Enable reuse of array of swap matrices when growing
 * Add more gates and demos

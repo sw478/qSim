@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from gate import SubGate, GateContainer
 
 
@@ -13,14 +12,16 @@ class Sim:
         self.sub_gates = []
         self.as_gate = np.eye(1 << n_qbits, dtype=complex)
 
+    def __repr__(self):
+        self.print_sim()
+
     # adds gate and evaluates the resulting sim as a matrix
     def add_gate(self, gate, i_qbits):
         sub_gate = SubGate(gate, i_qbits, self.n_qbits)
-        self.sub_gates += [sub_gate]
         self.as_gate = np.matmul(sub_gate.full_mat, self.as_gate)
 
     def to_gate(self, gate_label="G"):
-        return GateContainer(gate_label, self.as_gate, 0, self.sub_gates)
+        return GateContainer(gate_label, self.as_gate, 0)
 
     # prints the quantum algorithm for this sim
     def print_sim(self):

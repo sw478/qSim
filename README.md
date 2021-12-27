@@ -1,12 +1,9 @@
 # Classical Quantum Circuit Simulator and Examples
 
 * Based off the Qiskit API but does not use Qiskit or any other quantum related libraries
-* info.md: Details on how to use program
+* system_design_doc: Program usage, class descriptions, details on error checking
 * design_doc: Requirements and types of testcases
-
-## Demos
-
-* Bell State
+* info.md: Miscellaneous project info, list of available gates
 
 ## Features
 

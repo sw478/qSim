@@ -1,0 +1,89 @@
+## System Design
+
+### Usage
+
+#### Creating a simulation
+
+1. Instantiate a Sim() object, with the desired number of qubits.
+2. Add gates sequentially with add_gate(gate, i_qbits).
+    a. gate: Gate object describing the gate used
+    b. i_qbits: Ordered set of indices of qubits to be used for the gate
+3. Call print_statevector(), print_prob_dist(), print_sim() to print Sim info.
+
+#### Creating a custom gate from a Sim
+
+1. Create a Sim with desired gates
+2. Call to_gate() to return a Gate object of the Sim
+3. Can now use Gate in another Sim
+
+### Relevant Classes
+
+#### Sim
+
+* Describes a quantum register with n_qbits # of qubits
+* Quantum gates can be added, turned into SubGates when passed in
+* to_gate(): Creates a single black box gate from the Sim
+* Matrix multiplication process:
+    * Does not have a single statevector throughout runtime, multiplying statevector with gates as they are added to modify this statevector
+    * Instead, there is a single matrix representing all gates added previously, to enable used of to_gate()
+    * Statevector and probability distribution is calculated each time they are printed
+        * Currently assumes statevector is initialized with all qubits as |0>
+* Options to inspect state of register:
+    * print_sim(): also the repr, prints a circuit diagram of the Sim, showing gates within
+        * for control gates, the control and target bits are differentiated
+    * print_statevector(): prints the current statevector
+    * print_prob_dist(): prints the current probability distribution based on the statevector
+
+#### GateContainer
+
+* Data class for containing information for a quantum gate
+    * Gate matrix: Unitary matrix represented by the quantum gate
+    * Gate label: String used for printouts
+    * Number of control bits (num_cb): Used for printing and multi-controlled gates
+    * Expected qubits: Size of gate in qubits
+* Independent of any Sim it might be used in
+
+#### SubGate
+
+* Describes a GateContainer within a Sim (dependent on Sim)
+* Data includes:
+    * A gate (GateContainer)
+    * i_qbits: Which qubit indices of the Sim has the gate been placed on
+    * n_qbits: Number of qubits in the Sim
+    * full_mat:
+        * The gate matrix placed in parallel (kron) with Identity gates
+        * Calculated after initialization
+        * Bits are swapped into the correct order indicated by i_qbits
+
+#### Gate
+
+* Function definitions for predefined gates to be used
+* Gates can be easily created and added here
+* Common gates are hardcoded to avoid unnecessary extra computation
+* Some gates have arguments (all are theta right now):
+    * Phase, rotational, Ising coupling gates
+* Modifiers for gates, takes in a gate as an argument, returns modified gate without change:
+    * Multi-controlled (MC):
+        * num_cb: number of control bits for gate
+        * Control bits will be the MSB bits
+        * Can also get an MC gate of an MC gate
+    * Multi-targeted (MT):
+        * num_tb: number of target bits
+        * Accepts only single bit gates
+    * Dagger (dg):
+        * Returns the conjugate transpose of the gate
+
+#### Permute
+
+* Functional class, used for swapping bit order in gate matrices
+* Permutation is performed using successive swaps on two bits
+* A swap matrix is used to swap the two bits, reordering a specific set of matrix rows/cols
+* These swap matrices are preprocessed using memoization
+    * They are preprocessed for n_qbits up to a max number, if a permutation is needed on a larger matrix, the swap matrices need to be reprocessed
+
+### Error checking
+
+List of common things needed to be checked:
+* check_size(): ensures the size of a matrix corresponds to the correct number of qubits
+* check_set(): ensures "i_qbits" lists are a set
+* check_valid_i_qbits(): ensures "i_qbits" values are valid (lower than n_qbits)

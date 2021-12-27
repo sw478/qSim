@@ -89,7 +89,6 @@ class GateContainer:
     gate_label: str
     mat: np.ndarray
     num_cb: int
-    sub_gates: List[SubGate] = None
 
     def __post_init__(self):
         self.expected_qbits = int(np.log2(self.mat.shape[0]))
@@ -288,29 +287,42 @@ class Gate:
 
     @staticmethod
     def S(dagger=False):
-        theta = np.pi / 2
+        if dagger:
+            return Gate.Sdg()
 
-        if not dagger:
-            return Gate.P(theta, "S")
-        else:
-            return Gate.P(-theta, "Sdg")
+        mat = np.array(
+            [[1, 0],
+             [0, 1j]])
+
+        return GateContainer("S", mat, 0)
 
     @staticmethod
     def Sdg():
-        return Gate.S(True)
+        mat = np.array(
+            [[1, 0],
+             [0, -1j]])
+
+        return GateContainer("Sdg", mat, 0)
 
     @staticmethod
     def T(dagger=False):
-        theta = np.pi / 4
+        if dagger:
+            return Gate.Tdg()
 
-        if not dagger:
-            return Gate.P(theta, "T")
-        else:
-            return Gate.P(-theta, "Tdg")
+        mat = np.array(
+            [[1, 0],
+             [0, Gate.SQRT_2 + 1j * Gate.SQRT_2]])
+
+        return GateContainer("T", mat, 0)
 
     @staticmethod
     def Tdg():
-        return Gate.T(True)
+
+        mat = np.array(
+            [[1, 0],
+             [0, Gate.SQRT_2 - 1j * Gate.SQRT_2]])
+
+        return GateContainer("Tdg", mat, 0)
 
     @staticmethod
     def CX():
@@ -404,12 +416,16 @@ class Gate:
     # recursively creates a controlled version of gate.mat
     @staticmethod
     def MC(gate, num_cb):
+        control_mat = np.array([[1, 0], [0, 0]])
+        target_mat = np.array([[0, 0], [0, 1]])
 
         mat = np.copy(gate.mat)
+        eye_size = mat.shape[0]
         for i in range(num_cb):
-            mat = np.kron(mat, [[0, 0], [0, 1]])
-            eye = np.eye(mat.shape[0] // 2)
-            mat = mat + np.kron(eye, [[1, 0], [0, 0]])
+            mat = np.kron(mat, target_mat)
+            eye = np.eye(eye_size)
+            eye_size *= 2
+            mat = mat + np.kron(eye, control_mat)
 
         return GateContainer(gate.gate_label, mat, gate.num_cb + num_cb)
 
