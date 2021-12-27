@@ -4,23 +4,27 @@ import pytest
 from gate import Gate, SubGate
 from sim import Sim
 
-margin = 0.000000001
-
 """
-    Some gates are hardcoded in the Gate class but might change in the future
+    Some gates are hardcoded in Gate but still have tests since this project is subject to change
 """
 
+margin = 0.0001
 
+"""
+    Checking gate matrices of some single-bit gates:
+    - I, H, X, Y, Z, S, Sdg, T, Tdg
+    - P: has an argument theta:
+        - checking equivalence to Z, S, Sdg, T, Tdg
+"""
 def test_gates_basic():
-    # increments of pi/4 to test phase and rotational gates
 
     expected_I = np.array(
         [[1, 0],
          [0, 1]])
 
     expected_H = np.array(
-        [[Gate.SQRT_H, Gate.SQRT_H],
-         [Gate.SQRT_H, -Gate.SQRT_H]])
+        [[Gate.SQRT_2, Gate.SQRT_2],
+         [Gate.SQRT_2, -Gate.SQRT_2]])
 
     expected_X = np.array(
         [[0, 1],
@@ -44,11 +48,11 @@ def test_gates_basic():
 
     expected_T = np.array(
         [[1, 0],
-         [0, Gate.SQRT_H + 1j * Gate.SQRT_H]])
+         [0, Gate.SQRT_2 + 1j * Gate.SQRT_2]])
 
     expected_Tdg = np.array(
         [[1, 0],
-         [0, Gate.SQRT_H - 1j * Gate.SQRT_H]])
+         [0, Gate.SQRT_2 - 1j * Gate.SQRT_2]])
 
     assert_matrices(Gate.I().mat, expected_I)
     assert_matrices(Gate.H().mat, expected_H)
@@ -74,8 +78,15 @@ def test_gates_basic():
     assert_matrices(Gate.P(-theta_T).mat, expected_Tdg)
 
 
+"""
+    Checking gate matrices of rotational gates:
+    - Rx, Ry, Rz
+    - Gates have an argument theta:
+        - 0, pi/2, pi, 2pi, 4pi
+"""
+
+
 def test_rotational_gates():
-    # increments of PI/2
     theta_0 = 0
     theta_1 = np.pi / 2
     theta_2 = np.pi
@@ -87,8 +98,8 @@ def test_rotational_gates():
          [0, 1]])
 
     expected_Rx_1 = np.array(
-        [[Gate.SQRT_H, -1j * Gate.SQRT_H],
-         [-1j * Gate.SQRT_H, Gate.SQRT_H]])
+        [[Gate.SQRT_2, -1j * Gate.SQRT_2],
+         [-1j * Gate.SQRT_2, Gate.SQRT_2]])
 
     expected_Rx_2 = np.array(
         [[0, -1j],
@@ -109,8 +120,8 @@ def test_rotational_gates():
          [0, 1]])
 
     expected_Ry_1 = np.array(
-        [[Gate.SQRT_H, -Gate.SQRT_H],
-         [Gate.SQRT_H, Gate.SQRT_H]])
+        [[Gate.SQRT_2, -Gate.SQRT_2],
+         [Gate.SQRT_2, Gate.SQRT_2]])
 
     expected_Ry_2 = np.array(
         [[0, -1],
@@ -131,8 +142,8 @@ def test_rotational_gates():
          [0, 1]])
 
     expected_Rz_1 = np.array(
-        [[Gate.SQRT_H - 1j * Gate.SQRT_H, 0],
-         [0, Gate.SQRT_H + 1j * Gate.SQRT_H]])
+        [[Gate.SQRT_2 - 1j * Gate.SQRT_2, 0],
+         [0, Gate.SQRT_2 + 1j * Gate.SQRT_2]])
 
     expected_Rz_2 = np.array(
         [[-1j, 0],
@@ -147,6 +158,14 @@ def test_rotational_gates():
     assert_matrices(Gate.Rz(theta_2).mat, expected_Rz_2)
     assert_matrices(Gate.Rz(theta_4).mat, expected_Rz_4)
     assert_matrices(Gate.Rz(theta_8).mat, expected_Rz_0)
+
+
+"""
+    Checking gate matrices of ising coupling gates:
+    - Rxx, Ryy, Rzz
+    - Gates have an argument theta:
+        - 0, pi/2, pi, 2pi, 4pi
+"""
 
 
 def test_ising_coupling_gates():
@@ -165,8 +184,8 @@ def test_ising_coupling_gates():
          [0, diag1, diag0, 0],
          [diag1, 0, 0, diag0]])
 
-    diag0 = Gate.SQRT_H
-    diag1 = -1j * Gate.SQRT_H
+    diag0 = Gate.SQRT_2
+    diag1 = -1j * Gate.SQRT_2
     expected_Rxx_1 = np.array(
         [[diag0, 0, 0, diag1],
          [0, diag0, diag1, 0],
@@ -203,8 +222,8 @@ def test_ising_coupling_gates():
          [0, diag1, diag0, 0],
          [-diag1, 0, 0, diag0]])
 
-    diag0 = Gate.SQRT_H
-    diag1 = -1j * Gate.SQRT_H
+    diag0 = Gate.SQRT_2
+    diag1 = -1j * Gate.SQRT_2
     expected_Ryy_1 = np.array(
         [[diag0, 0, 0, -diag1],
          [0, diag0, diag1, 0],
@@ -241,8 +260,8 @@ def test_ising_coupling_gates():
          [0, 0, diag1, 0],
          [0, 0, 0, diag0]])
 
-    diag0 = Gate.SQRT_H - 1j * Gate.SQRT_H
-    diag1 = Gate.SQRT_H + 1j * Gate.SQRT_H
+    diag0 = Gate.SQRT_2 - 1j * Gate.SQRT_2
+    diag1 = Gate.SQRT_2 + 1j * Gate.SQRT_2
     expected_Rzz_1 = np.array(
         [[diag0, 0, 0, 0],
          [0, diag1, 0, 0],
@@ -272,6 +291,12 @@ def test_ising_coupling_gates():
     assert_matrices(Gate.Rzz(theta_8).mat, expected_Rzz_0)
 
 
+"""
+    Checking gate matrices of swap gates:
+    - Swap, sqrt Swap, imag Swap, sqrt imag Swap
+"""
+
+
 def test_swap_and_variations():
     expected_swap = np.array(
         [[1, 0, 0, 0],
@@ -293,14 +318,20 @@ def test_swap_and_variations():
 
     expected_swap_sqrt_i = np.array(
         [[1, 0, 0, 0],
-         [0, Gate.SQRT_H, 1j * Gate.SQRT_H, 0],
-         [0, 1j * Gate.SQRT_H, Gate.SQRT_H, 0],
+         [0, Gate.SQRT_2, 1j * Gate.SQRT_2, 0],
+         [0, 1j * Gate.SQRT_2, Gate.SQRT_2, 0],
          [0, 0, 0, 1]])
 
     assert_matrices(Gate.Swap().mat, expected_swap)
     assert_matrices(Gate.Swap_sqrt().mat, expected_swap_sqrt)
     assert_matrices(Gate.Swap_i().mat, expected_swap_i)
     assert_matrices(Gate.Swap_sqrt_i().mat, expected_swap_sqrt_i)
+
+
+"""
+    Checking gate matrices of control gates:
+    - CX, Toffoli, CSwap, CPhase
+"""
 
 
 def test_control_gates():
@@ -350,7 +381,7 @@ def test_control_gates():
         [[1, 0, 0, 0],
          [0, 1, 0, 0],
          [0, 0, 1, 0],
-         [0, 0, 0, Gate.SQRT_H + 1j * Gate.SQRT_H]])
+         [0, 0, 0, Gate.SQRT_2 + 1j * Gate.SQRT_2]])
 
     theta_Z = np.pi
     theta_S = np.pi / 2
@@ -361,7 +392,50 @@ def test_control_gates():
     assert_matrices(Gate.CP(theta_T).mat, expected_cp_t)
 
 
-def test_gates():
+"""
+    Checking statevector of Sim with multi-target gates
+"""
+
+def test_multi_target_gates():
+    n_qbits = 4
+    sim = Sim(n_qbits, "Test: Multi-Target Gates", True)
+    print("")
+
+    deg_045 = 0.25 * np.exp(1j * 1 * np.pi / 4)
+    deg_135 = 0.25 * np.exp(1j * 3 * np.pi / 4)
+    deg_225 = 0.25 * np.exp(1j * 5 * np.pi / 4)
+    deg_315 = 0.25 * np.exp(1j * 7 * np.pi / 4)
+    expected_prob_dist = [0.0625 for i in range(1 << n_qbits)]
+
+    sim.add_gate(Gate.MT(Gate.H(), 4), [0, 1, 2, 3])
+    assert_arrays(sim.print_prob_dist(), expected_prob_dist)
+    assert_arrays(sim.print_statevector(), [0.25 for i in range(1 << n_qbits)])
+
+    sim.add_gate(Gate.MT(Gate.T(), 4), [0, 1, 2, 3])
+    assert_arrays(sim.print_prob_dist(), expected_prob_dist)
+    assert_arrays(sim.print_statevector(), [0.25, deg_045, deg_045, 0.25j, deg_045, 0.25j, 0.25j, deg_135, deg_045, 0.25j, 0.25j, deg_135, 0.25j, deg_135, deg_135, -0.25])
+
+    sim.add_gate(Gate.MT(Gate.X(), 3), [0, 1, 3])
+    assert_arrays(sim.print_prob_dist(), expected_prob_dist)
+    assert_arrays(sim.print_statevector(), [deg_135, 0.25j, 0.25j, deg_045, -0.25, deg_135, deg_135, 0.25j, 0.25j, deg_045, deg_045, 0.25, deg_135, 0.25j, 0.25j, deg_045])
+
+    sim.add_gate(Gate.MT(Gate.S(), 3), [0, 2, 3])
+    assert_arrays(sim.print_prob_dist(), expected_prob_dist)
+    assert_arrays(sim.print_statevector(), [deg_135, -0.25, 0.25j, deg_135, -0.25j, deg_315, deg_225, -0.25j, -0.25, deg_225, deg_135, -0.25, deg_315, 0.25, -0.25j, deg_315])
+
+    sim.add_gate(Gate.MT(Gate.Y(), 2), [1, 2])
+    assert_arrays(sim.print_prob_dist(), expected_prob_dist)
+    assert_arrays(sim.print_statevector(), [deg_045, 0.25j, -0.25j, deg_315, 0.25j, deg_135, deg_315, 0.25, 0.25j, deg_135, deg_315, 0.25, deg_135, -0.25, 0.25, deg_045])
+
+    sim.print_sim()
+
+
+"""
+    Checking full matrices of SubGate
+"""
+
+
+def test_sub_gates():
     print("")
     n_qbits = 3
 
@@ -384,30 +458,9 @@ def test_gates():
     assert_matrices(full_mat, expected)
 
 
-def test_gates_with_args():
-    print("")
-    n_qbits = 3
-    i_qbits = [2]
-    theta = np.pi / 2
-    gate = Gate.P(theta)
-    gate_inst = SubGate(gate, i_qbits, n_qbits)
-
-    base_mat = gate_inst.gate.mat
-    expected = np.array([[1, 0], [0, 1j]])
-    assert_matrices(base_mat, expected)
-
-
-def test_controlled_gates():
-    n_qbits = 3
-    sim = Sim(n_qbits, "Test: Controlled Gates", True)
-    print("")
-
-    sim.add_gate(Gate.H(), [0])
-    sim.add_gate(Gate.H(), [1])
-    assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
-
-    sim.add_gate(Gate.Toffoli(), [0, 1, 2])
-    assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0, 0, 0, 0, 0.5])
+"""
+    Checking statevector of Sim with gates
+"""
 
 
 def test_statevector():
@@ -415,8 +468,8 @@ def test_statevector():
     sim = Sim(n_qbits, "Test: Statevector", True)
     print("")
 
-    sim.add_gate(Gate.H(), [0])
-    sim.add_gate(Gate.H(), [1])
+    gate = Gate.MT(Gate.H(), 2)
+    sim.add_gate(gate, [0, 1])
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
 
     sim.add_gate(Gate.Toffoli(), [0, 1, 2])
@@ -426,50 +479,26 @@ def test_statevector():
     assert_arrays(sim.print_statevector(), [0.5, 0.5, 0, 0, 0.5, 0, 0, 0.5])
 
     sim.add_gate(Gate.H(), [2])
-    assert_arrays(sim.print_statevector(), [Gate.SQRT_H, Gate.SQRT_E, 0, Gate.SQRT_E, 0, Gate.SQRT_E, 0, -Gate.SQRT_E])
+    assert_arrays(sim.print_statevector(), [Gate.SQRT_2, Gate.SQRT_8, 0, Gate.SQRT_8, 0, Gate.SQRT_8, 0, -Gate.SQRT_8])
 
     sim.add_gate(Gate.Z(), [0])
     assert_arrays(sim.print_statevector(),
-                  [Gate.SQRT_H, -Gate.SQRT_E, 0, -Gate.SQRT_E, 0, -Gate.SQRT_E, 0, Gate.SQRT_E])
+                  [Gate.SQRT_2, -Gate.SQRT_8, 0, -Gate.SQRT_8, 0, -Gate.SQRT_8, 0, Gate.SQRT_8])
 
     sim.add_gate(Gate.S(), [1])
     assert_arrays(sim.print_statevector(),
-                  [Gate.SQRT_H, -Gate.SQRT_E, 0, -1j * Gate.SQRT_E, 0, -Gate.SQRT_E, 0, 1j * Gate.SQRT_E])
+                  [Gate.SQRT_2, -Gate.SQRT_8, 0, -1j * Gate.SQRT_8, 0, -Gate.SQRT_8, 0, 1j * Gate.SQRT_8])
 
     sim.add_gate(Gate.T(), [2])
     assert_arrays(sim.print_statevector(),
-                  [Gate.SQRT_H, -Gate.SQRT_E, 0, -Gate.SQRT_E * 1j, 0, -0.25 - 0.25j, 0, -0.25 + 0.25j])
+                  [Gate.SQRT_2, -Gate.SQRT_8, 0, -Gate.SQRT_8 * 1j, 0, -0.25 - 0.25j, 0, -0.25 + 0.25j])
 
     sim.print_sim()
 
 
-def test_bell_state():
-    n_qbits = 2
-    sim = Sim(n_qbits, "Test: Bell State", True)
-    print("")
-
-    sim.add_gate(Gate.H(), [0])
-    assert_arrays(sim.print_statevector(), [Gate.SQRT_H, Gate.SQRT_H, 0, 0])
-
-    sim.add_gate(Gate.CX(), [0, 1])
-    assert_arrays(sim.print_statevector(), [Gate.SQRT_H, 0, 0, Gate.SQRT_H])
-
-    sim.print_sim()
-
-
-def test_3():
-    n_qbits = 3
-    sim = Sim(n_qbits, "Test 3", True)
-    print("")
-
-    sim.add_gate(Gate.H(), [0])
-    sim.add_gate(Gate.H(), [1])
-    assert_arrays(sim.print_statevector(), [0.5, 0.5, 0.5, 0.5, 0, 0, 0, 0])
-
-    sim.add_gate(Gate.CX(), [1, 2])
-    assert_arrays(sim.print_statevector(), [0.5, 0.5, 0, 0, 0, 0, 0.5, 0.5])
-
-    sim.print_sim()
+"""
+    Checking statevector of custom Gates made from Sims
+"""
 
 
 def test_custom_gate():
@@ -506,13 +535,12 @@ def assert_arrays(arr1, arr2):
 
 
 def assert_matrices(a, b):
-    np.testing.assert_array_almost_equal(a, b, 6)
+    np.testing.assert_array_almost_equal(a, b, 4)
 
 
 def main():
-    test_statevector()
-    test_bell_state()
-    test_3()
+    pass
+    # running with pytest
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from gate import SubGate, GateContainer
 
 
@@ -40,6 +41,7 @@ class Sim:
         statevector = np.zeros(1 << self.n_qbits, dtype=complex)
         statevector[0] = 1
         statevector = np.matmul(self.as_gate, statevector)
+        statevector = np.around(statevector, 5)
 
         if not self.for_testing:
             print(f"[Statevector] {self.name}\n{statevector}", end="\n\n")
@@ -50,7 +52,8 @@ class Sim:
         statevector = np.zeros(1 << self.n_qbits, dtype=complex)
         statevector[0] = 1
         statevector = np.matmul(self.as_gate, statevector)
-        prob_dist = (statevector ** 2).real
+        prob_dist = [np.abs(i) ** 2 for i in statevector]
+        prob_dist = np.round(prob_dist, 5)
 
         if not self.for_testing:
             print(f"[Probability Dist.] {self.name}\n{prob_dist}", end="\n\n")

@@ -15,7 +15,7 @@ class GateContainer:
         self.mat = mat
         self.num_cb = num_cb
         self.sub_gates = sub_gates
-        self.expected_qbits = np.log2(mat.shape[0])
+        self.expected_qbits = int(np.log2(mat.shape[0]))
 
 
 """
@@ -146,13 +146,14 @@ class Permute:
 
 
 """
-    Gate definitions and common constants
+    Gate definitions
 """
 
 
 class Gate:
-    SQRT_H = 1 / np.sqrt(2)
-    SQRT_E = 1 / np.sqrt(8)
+    SQRT_2 = 1 / np.sqrt(2)
+    SQRT_8 = 1 / np.sqrt(8)
+    SQRT_32 = 1 / np.sqrt(32)
 
     @staticmethod
     def I():
@@ -162,8 +163,8 @@ class Gate:
     @staticmethod
     def H():
         mat = np.array(
-            [[Gate.SQRT_H, Gate.SQRT_H],
-             [Gate.SQRT_H, -Gate.SQRT_H]])
+            [[Gate.SQRT_2, Gate.SQRT_2],
+             [Gate.SQRT_2, -Gate.SQRT_2]])
 
         return GateContainer("H", mat, 0)
 
@@ -185,7 +186,20 @@ class Gate:
 
     @staticmethod
     def Z():
-        return Gate.P(np.pi, "Z")
+        mat = np.array(
+            [[1, 0],
+             [0, -1]])
+
+        return GateContainer("Z", mat, 0)
+
+    # sqrt X
+    @staticmethod
+    def rX():
+        mat = np.array(
+            [[0.5 + 0.5j, 0.5 - 0.5j],
+             [0.5 - 0.5j, 0.5 + 0.5j]])
+
+        return GateContainer("rX", mat, 0)
 
     @staticmethod
     def P(theta, gate_label="P"):
@@ -297,22 +311,22 @@ class Gate:
     @staticmethod
     def CX():
         gate = Gate.X()
-        return Gate.C(gate, num_cb=1)
+        return Gate.MC(gate, num_cb=1)
 
     @staticmethod
     def Toffoli():
         gate = Gate.X()
-        return Gate.C(gate, num_cb=2)
+        return Gate.MC(gate, num_cb=2)
 
     @staticmethod
     def CSwap():
         gate = Gate.Swap()
-        return Gate.C(gate, num_cb=1)
+        return Gate.MC(gate, num_cb=1)
 
     @staticmethod
     def CP(theta):
         gate = Gate.P(theta)
-        return Gate.C(gate, num_cb=1)
+        return Gate.MC(gate, num_cb=1)
 
     @staticmethod
     def Swap():
@@ -348,65 +362,52 @@ class Gate:
     def Swap_sqrt_i():
         mat = np.array(
             [[1, 0, 0, 0],
-             [0, Gate.SQRT_H, 1j * Gate.SQRT_H, 0],
-             [0, 1j * Gate.SQRT_H, Gate.SQRT_H, 0],
+             [0, Gate.SQRT_2, 1j * Gate.SQRT_2, 0],
+             [0, 1j * Gate.SQRT_2, Gate.SQRT_2, 0],
              [0, 0, 0, 1]])
 
         return GateContainer("irSW", mat, 0)
 
-    # sqrt X
-    @staticmethod
-    def rX():
-        mat = np.array(
-            [[0.5 + 0.5j, 0.5 - 0.5j],
-             [0.5 - 0.5j, 0.5 + 0.5j]])
+    """
+        Special gate operations
+    """
 
-        return GateContainer("rX", mat, 0)
+    # conjugate transpose of matrix
+    @staticmethod
+    def dg(gate):
+        mat = np.matrix.h(gate.mat)
+
+        return GateContainer(gate.gate_label, mat, gate.num_cb)
 
     # multi-targeted gate for single bit gates
-    # tgt_bits: order doesn't matter
+    # num_tb: number of target bits
     @staticmethod
-    def MT(gate, tgt_bits, n_qbits):
+    def MT(gate, num_tb):
 
-        if not Error.check_set(tgt_bits):
+        n_qbits_mat = np.log2(gate.mat.shape[0])
+        if n_qbits_mat != 1:
+            print(f"Error: Gate is not single bit: {n_qbits_mat}")
             return
-
-        if not Error.check_valid_i_qbits(tgt_bits, n_qbits):
-            return
-
-        mat_size = gate.mat.shape[0]
-        if mat_size != 2:
-            print(f"Error: Gate is not single bit: {np.log2(mat_size)}")
-            return
-
-        tgt_bits.sort()
 
         mat = [1]
-        j = 0
-        for i in range(n_qbits) and j < len(tgt_bits):
-            if i < tgt_bits[j]:
-                mat = np.kron(mat, np.eye(2))
-            else:
-                mat = np.kron(mat, gate.mat)
-                j += 1
+        for i in range(num_tb):
+            mat = np.kron(mat, gate.mat)
 
-        i_qbits = tgt_bits
-        return SubGate(gate, i_qbits, n_qbits)
+        return GateContainer(gate.gate_label, mat, 0)
 
     # multi-controlled gate
-    # recursively creates a controlled version of gate.mat with num_cb number of control bits
+    # num_cb: number of control bits
+    # recursively creates a controlled version of gate.mat
     @staticmethod
-    def C(gate, num_cb):
-        if num_cb == 0:
-            return gate
+    def MC(gate, num_cb):
 
-        mat_size = gate.mat.shape[0]
+        mat = np.copy(gate.mat)
+        for i in range(num_cb):
+            mat = np.kron(mat, [[0, 0], [0, 1]])
+            eye = np.eye(mat.shape[0] // 2)
+            mat = mat + np.kron(eye, [[1, 0], [0, 0]])
 
-        gate.mat = np.kron(gate.mat, [[0, 0], [0, 1]])
-        gate.mat = gate.mat + np.kron(np.eye(mat_size), [[1, 0], [0, 0]])
-
-        gate.num_cb += 1
-        return Gate.C(gate, num_cb - 1)
+        return GateContainer(gate.gate_label, mat, gate.num_cb + num_cb)
 
 
 class Error:
