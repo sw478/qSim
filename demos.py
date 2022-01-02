@@ -89,34 +89,66 @@ def demo_bell_state():
 
 # Grover's search algorithm
 def demo_grover():
-    n_qbits = 3
-    i_qbits = [i for i in range(n_qbits)]
+    n_qbits = 4
+    search_bit = 0
+    ideal_num_oracle_calls = int(np.around(np.pi / 4 * n_qbits))
+    print(f"ideal number of oracle calls: {ideal_num_oracle_calls}")
+
+    all_qbits = [i for i in range(n_qbits)]
     sim = Sim(n_qbits, "Grover's Search Algorithm")
 
+    gate_oracle = grover_oracle(n_qbits, search_bit) # Oracle for flip_state
+    gate_diffuser = grover_diffuser(n_qbits) # Diffuser
+
     # Equal superposition
-    sim.add_gate(Gate.MT(Gate.H(), n_qbits), i_qbits)
+    sim.add_gate(Gate.MT(Gate.H(), n_qbits), all_qbits)
 
-    # Oracle for |101> and |110>
-    sim.add_gate(Gate.MC(Gate.Z(), 1), [0, 1])
-    sim.add_gate(Gate.MC(Gate.Z(), 1), [0, 2])
-
-    # Diffuser
-    gate_diffuser = general_diffuser(n_qbits)
-    sim.add_gate(gate_diffuser, i_qbits)
+    for i in range(ideal_num_oracle_calls):
+        sim.add_gate(gate_oracle, all_qbits)
+        sim.add_gate(gate_diffuser, all_qbits)
 
     sim.print_sim()
     sim.print_prob_dist()
 
 
-def general_diffuser(n_qbits):
-    sim = Sim(n_qbits)
+def grover_oracle(n_qbits, search_bit):
+    sim = Sim(n_qbits, "Oracle")
+    all_qbits = [i for i in range(n_qbits)]
+    i_qbits = int_to_i_qbits(search_bit, n_qbits)
 
-    i_qbits = [i for i in range(n_qbits)]
-    sim.add_gate(Gate.MT(Gate.H(), n_qbits), i_qbits)
-    sim.add_gate(Gate.MT(Gate.X(), n_qbits), i_qbits)
-    sim.add_gate(Gate.MC(Gate.Z(), n_qbits - 1), i_qbits)
-    sim.add_gate(Gate.MT(Gate.X(), n_qbits), i_qbits)
-    sim.add_gate(Gate.MT(Gate.H(), n_qbits), i_qbits)
+    if i_qbits:
+        sim.add_gate(Gate.MT(Gate.X(), len(i_qbits)), i_qbits)
+    sim.add_gate(Gate.MC(Gate.Z(), n_qbits - 1), all_qbits)
+    if i_qbits:
+        sim.add_gate(Gate.MT(Gate.X(), len(i_qbits)), i_qbits)
+
+    sim.print_sim()
+    return sim.to_gate("Orcl")
+
+
+def int_to_i_qbits(a, n_qbits):
+    i_qbits = []
+
+    if a == 0:
+        return []
+
+    for i in range(n_qbits):
+        if a % 2 != 0:
+            i_qbits += [i]
+        a //= 2
+
+    return i_qbits
+
+
+def grover_diffuser(n_qbits):
+    sim = Sim(n_qbits, "Diffuser")
+    all_qbits = [i for i in range(n_qbits)]
+
+    sim.add_gate(Gate.MT(Gate.H(), n_qbits), all_qbits)
+    sim.add_gate(Gate.MT(Gate.X(), n_qbits), all_qbits)
+    sim.add_gate(Gate.MC(Gate.Z(), n_qbits - 1), all_qbits)
+    sim.add_gate(Gate.MT(Gate.X(), n_qbits), all_qbits)
+    sim.add_gate(Gate.MT(Gate.H(), n_qbits), all_qbits)
 
     sim.print_sim()
     return sim.to_gate("Dif")

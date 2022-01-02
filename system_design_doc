@@ -1,20 +1,11 @@
 ## System Design
 
-### Usage
+### Architecture
 
-#### Creating a simulation
-
-1. Instantiate a Sim() object, with the desired number of qubits.
-2. Add gates sequentially with add_gate(gate, i_qbits).
-    a. gate: Gate object describing the gate used
-    b. i_qbits: Ordered set of indices of qubits to be used for the gate
-3. Call print_statevector(), print_prob_dist(), print_sim() to print Sim info.
-
-#### Creating a custom gate from a Sim
-
-1. Create a Sim with desired gates
-2. Call to_gate() to return a Gate object of the Sim
-3. Can now use Gate in another Sim
+* Sims contain a list of SubGates
+* Each SubGate is a representation of a gate within a Sim
+* Each SubGate is associated with a GateContainer and a mapping of the gate inputs to Sim indices
+* A GateContainer is a dataclass containing info of a quantum gate (independent of a Sim)
 
 ### Relevant Classes
 
@@ -80,10 +71,3 @@
 * A swap matrix is used to swap the two bits, reordering a specific set of matrix rows/cols
 * These swap matrices are preprocessed using memoization
     * They are preprocessed for n_qbits up to a max number, if a permutation is needed on a larger matrix, the swap matrices need to be reprocessed
-
-### Error checking
-
-List of common things needed to be checked:
-* check_size(): ensures the size of a matrix corresponds to the correct number of qubits
-* check_set(): ensures "i_qbits" lists are a set
-* check_valid_i_qbits(): ensures "i_qbits" values are valid (lower than n_qbits)

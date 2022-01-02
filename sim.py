@@ -18,6 +18,7 @@ class Sim:
     # adds gate and evaluates the resulting sim as a matrix
     def add_gate(self, gate, i_qbits):
         sub_gate = SubGate(gate, i_qbits, self.n_qbits)
+        self.sub_gates += [sub_gate]
         self.as_gate = np.matmul(sub_gate.full_mat, self.as_gate)
 
     def to_gate(self, gate_label="G"):

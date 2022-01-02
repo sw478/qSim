@@ -1,11 +1,11 @@
-# Design Doc
+## Design Doc
 
-## Problem Description
+### Problem Description
 
 The goal of this project is to create a classical quantum circuit simulator.
 This will be mainly used as practice for coding and as a learning experience for quantum computing.
 
-## Requirements
+### Requirements
 
 * Create quantum circuits similar to online quantum computer simulators
 * Gates to support:
@@ -34,7 +34,7 @@ This will be mainly used as practice for coding and as a learning experience for
         * When printing a custom gate within a printout, print as a single gate
     * Print current statevector or probability distribution
 
-## Testing
+### Testing
 
 Types of testcases:
 * Gate matrices (base, full) are correct when created with Gates
@@ -46,7 +46,14 @@ Types of testcases:
 * Statevector consistent with probability distribution in a Sim
 * Correct statevector throughout a Sim
 
-## Future Work
+### Error checking
+
+List of common things needed to be checked:
+* check_size(): ensures the size of a matrix corresponds to the correct number of qubits
+* check_set(): ensures "i_qbits" lists are a set
+* check_valid_i_qbits(): ensures "i_qbits" values are valid (lower than n_qbits)
+
+### Future Work
 
 * Support for classical bits and gates
 * Support custom initial statevector in Sims
