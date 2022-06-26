@@ -13,6 +13,10 @@ class Permute:
 
     @staticmethod
     def get_swap_mat(n_qbits, i_qbit, j_qbit):
+        """
+        :param n_qbits: extended number of qubits
+        :return: a swap matrix to swap qubits (i_qbit and j_qbit)
+        """
         if Permute.__max_n_qbits < n_qbits:
             Permute.preprocess(n_qbits)
 
@@ -29,6 +33,11 @@ class Permute:
 
     @staticmethod
     def preprocess(n_qbits):
+        """
+        Preprocesses all swap matrices for indices between 0 and n_qbits - 1
+
+        :param n_qbits: max number of qubits to preprocess for now
+        """
         mat_size = 1 << n_qbits
         Permute.__preproc = np.ndarray(shape=(n_qbits, n_qbits, mat_size, mat_size))
         Permute.__max_n_qbits = n_qbits

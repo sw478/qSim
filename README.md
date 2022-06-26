@@ -1,9 +1,9 @@
-## Classical Quantum Circuit Simulator and Examples
+## quantSim: A Classical Quantum Circuit Simulator with Examples
 
 * Based off the Qiskit API but does not use Qiskit or any other quantum related libraries
-* system_design_doc: Program usage, architecture, class descriptions, details on error checking
-* design_doc: Requirements and testcases
-* info.md: Miscellaneous project info, list of available gates
+* system_design_doc.md: Program usage, architecture, class descriptions, details on error checking
+* design_doc.md: Requirements and testcases
+* info.md: Usage, list of available gates, miscellaneous project info
 
 ## Features
 
@@ -14,7 +14,7 @@
 * Printing features:
     * Circuit diagram
     * Current statevector or probability distribution
-    * Can inspect (print) between gates
+    * Can inspect (print) between gate additions
 * Doesn't support:
     * Measurements
     * Classical bits

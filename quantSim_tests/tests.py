@@ -1,14 +1,13 @@
 import numpy as np
 import sys
 import pytest
-from gate import Gate, SubGate
-from sim import Sim
+from quantSim import *
 
 """
-    Some gates are hardcoded in Gate but still have tests since this project is subject to change
+    Some gates are hardcoded in Gate but still have tests since project architecture is subject to change
 """
 
-margin = 0.0001
+margin_of_error = 0.0001
 
 """
     Checking gate matrices of some single-bit gates:
@@ -531,7 +530,7 @@ def test_custom_gate():
 
 
 def assert_arrays(arr1, arr2):
-    assert arr1 == pytest.approx(arr2, margin)
+    assert arr1 == pytest.approx(arr2, margin_of_error)
 
 
 def assert_matrices(a, b):

@@ -1,14 +1,19 @@
 import numpy as np
-from gate import SubGate, GateContainer
+from quantSim import SubGate
+from quantSim import GateContainer
 
 
 class Sim:
 
-    # initializes the simulator with n_qbits qubits
-    def __init__(self, n_qbits, name="", for_testing=False):
+    def __init__(self, n_qbits, name=""):
+        """
+        Initializes the simulator with n_qbits qubits
+
+        :param n_qbits: number of qubits for simulator
+        :param name: optional name
+        """
         self.n_qbits = n_qbits
         self.name = name
-        self.for_testing = for_testing
         self.sub_gates = []
         self.as_gate = np.eye(1 << n_qbits, dtype=complex)
 
@@ -24,8 +29,10 @@ class Sim:
     def to_gate(self, gate_label="G"):
         return GateContainer(gate_label, self.as_gate, 0)
 
-    # prints the quantum algorithm for this sim
     def print_sim(self):
+        """
+        Prints out a simple visualization of Sim
+        """
         print(f"[Circuit Diagram] {self.name}")
 
         for i_qbit in range(self.n_qbits):
@@ -40,24 +47,28 @@ class Sim:
         print("")
 
     def print_statevector(self):
+        """
+        Prints current statevector
+        """
         statevector = np.zeros(1 << self.n_qbits, dtype=complex)
         statevector[0] = 1
         statevector = np.matmul(self.as_gate, statevector)
         statevector = np.around(statevector, 5)
 
-        if not self.for_testing:
-            print(f"[Statevector] {self.name}\n{statevector}", end="\n\n")
+        print(f"[Statevector] {self.name}\n{statevector}", end="\n\n")
 
         return statevector
 
     def print_prob_dist(self):
+        """
+        Prints probability distribution
+        """
         statevector = np.zeros(1 << self.n_qbits, dtype=complex)
         statevector[0] = 1
         statevector = np.matmul(self.as_gate, statevector)
         prob_dist = [np.abs(i) ** 2 for i in statevector]
         prob_dist = np.round(prob_dist, 5)
 
-        if not self.for_testing:
-            print(f"[Probability Dist.] {self.name}\n{prob_dist}", end="\n\n")
+        print(f"[Probability Dist.] {self.name}\n{prob_dist}", end="\n\n")
 
         return prob_dist

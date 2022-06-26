@@ -1,102 +1,5 @@
 import numpy as np
-from error import Error
-from permute import Permute
-from dataclasses import dataclass
-
-
-"""
-    gate_label: character representation of gate, printed when circuit diagram is printed
-    mat: gate matrix in LSB order, includes control bits
-    num_cb: number of control bits for this gate, only used for printing
-    expected_qbits: expected number of bits for this gate
-"""
-
-
-@dataclass
-class GateContainer:
-    gate_label: str
-    mat: np.ndarray
-    num_cb: int
-
-    def __post_init__(self):
-        self.expected_qbits = int(np.log2(self.mat.shape[0]))
-
-
-"""
-    Instance of a gate in a Sim or a custom gate
-    i_qbits: mapping of Sim's qubit indices to gate's qubit indices
-    n_qbits: number of qubits in Sim, determines size of full gate matrix
-    full matrix: tensor product of gate matrix and identity gates in parallel
-"""
-
-
-class SubGate:
-    full_mat = None
-
-    def __init__(self, gate, i_qbits, n_qbits):
-        self.gate = gate
-        self.__i_qbits = i_qbits
-        self.__n_qbits = n_qbits
-
-        if not Error.check_size(gate.mat, i_qbits):
-            return
-
-        if not Error.check_valid_i_qbits(i_qbits, self.__n_qbits):
-            return
-
-        if not Error.check_set(i_qbits):
-            return
-
-        self.full_mat = self.__get_full_mat()
-
-    def __get_full_mat(self):
-        # initial unswapped full matrix in LSB
-        mat = [1]
-        for i in range(self.__n_qbits - len(self.__i_qbits)):
-            mat = np.kron(mat, np.eye(2))
-        mat = np.kron(mat, self.gate.mat)
-
-        # goal permutation
-        swap_goal = [i for i in range(self.__n_qbits)]
-
-        # current permutation
-        gen = (i for i in swap_goal if i not in self.__i_qbits)
-        swap_list = self.__i_qbits + [i for i in gen]
-
-        # permute until goal is reached
-        for i, (a, b) in enumerate(zip(swap_list, swap_goal)):
-            if b == a:
-                continue
-
-            full_swap_mat = Permute.get_swap_mat(self.__n_qbits, i, a)
-            mat = np.linalg.multi_dot([full_swap_mat, mat, full_swap_mat])
-            swap_list[i], swap_list[a] = swap_list[a], swap_list[i]
-
-        return mat
-
-    # i_qbit referring to the Sim i_qbit
-    def print_gate(self, i_qbit):
-        num_chars = len(self.gate.gate_label)
-
-        if i_qbit not in self.__i_qbits:
-            [print(" ", end="") for i in range(num_chars)]
-            if self.gate.num_cb > 0:
-                print(" ", end="")
-            return
-
-        j_qbit = self.__i_qbits.index(i_qbit)
-        if j_qbit < self.gate.num_cb:
-            print("C", end="")
-            [print(" ", end="") for i in range(num_chars)]
-        else:
-            if self.gate.num_cb > 0:
-                print(" ", end="")
-            print(self.gate.gate_label, end="")
-
-
-"""
-    Gate definitions
-"""
+from quantSim import GateContainer
 
 
 class Gate:
@@ -107,11 +10,17 @@ class Gate:
 
     @staticmethod
     def I():
+        """
+        :return: an Identity gate
+        """
         mat = np.eye(2)
         return GateContainer("I", mat, 0)
 
     @staticmethod
     def H():
+        """
+        :return: a Hadamard gate
+        """
         mat = np.array(
             [[Gate.SQRT_2, Gate.SQRT_2],
              [Gate.SQRT_2, -Gate.SQRT_2]])
@@ -120,6 +29,9 @@ class Gate:
 
     @staticmethod
     def X():
+        """
+        :return: a not gate
+        """
         mat = np.array(
             [[0, 1],
              [1, 0]])
@@ -128,6 +40,9 @@ class Gate:
 
     @staticmethod
     def Y():
+        """
+        :return: a Y gate
+        """
         mat = np.array(
             [[0, -1j],
              [1j, 0]])
@@ -136,15 +51,20 @@ class Gate:
 
     @staticmethod
     def Z():
+        """
+        :return: a Z gate
+        """
         mat = np.array(
             [[1, 0],
              [0, -1]])
 
         return GateContainer("Z", mat, 0)
 
-    # sqrt X
     @staticmethod
     def rX():
+        """
+        :return: a square root of not gate
+        """
         mat = np.array(
             [[0.5 + 0.5j, 0.5 - 0.5j],
              [0.5 - 0.5j, 0.5 + 0.5j]])
@@ -153,6 +73,10 @@ class Gate:
 
     @staticmethod
     def P(theta, gate_label="P"):
+        """
+        :param theta: phase shift angle in radians
+        :return: a phase shift gate
+        """
         mat = np.array(
             [[1, 0],
              [0, np.exp(theta * 1j)]])
@@ -230,6 +154,9 @@ class Gate:
 
     @staticmethod
     def S(dagger=False):
+        """
+        :return: an S gate
+        """
         if dagger:
             return Gate.Sdg()
 
@@ -241,6 +168,9 @@ class Gate:
 
     @staticmethod
     def Sdg():
+        """
+        :return: an S dagger gate
+        """
         mat = np.array(
             [[1, 0],
              [0, -1j]])
@@ -249,6 +179,9 @@ class Gate:
 
     @staticmethod
     def T(dagger=False):
+        """
+        :return: a T gate
+        """
         if dagger:
             return Gate.Tdg()
 
@@ -260,7 +193,9 @@ class Gate:
 
     @staticmethod
     def Tdg():
-
+        """
+        :return: a T dagger gate
+        """
         mat = np.array(
             [[1, 0],
              [0, Gate.SQRT_2 - 1j * Gate.SQRT_2]])
@@ -269,6 +204,9 @@ class Gate:
 
     @staticmethod
     def Swap():
+        """
+        :return: a swap gate
+        """
         mat = np.array(
             [[1, 0, 0, 0],
              [0, 0, 1, 0],
@@ -279,6 +217,9 @@ class Gate:
 
     @staticmethod
     def Swap_sqrt():
+        """
+        :return: a square root of swap gate
+        """
         mat = np.array(
             [[1, 0, 0, 0],
              [0, 0.5 + 0.5j, 0.5 - 0.5j, 0],
@@ -289,6 +230,9 @@ class Gate:
 
     @staticmethod
     def Swap_i():
+        """
+        :return: an imaginary swap gate
+        """
         mat = np.array(
             [[1, 0, 0, 0],
              [0, 0, 1j, 0],
@@ -299,6 +243,9 @@ class Gate:
 
     @staticmethod
     def Swap_sqrt_i():
+        """
+        :return: an imaginary square root of swap gate
+        """
         mat = np.array(
             [[1, 0, 0, 0],
              [0, Gate.SQRT_2, 1j * Gate.SQRT_2, 0],
@@ -313,21 +260,34 @@ class Gate:
 
     @staticmethod
     def CX():
+        """
+        :return: a controlled not gate
+        """
         gate = Gate.X()
         return Gate.MC(gate, num_cb=1)
 
     @staticmethod
     def Toffoli():
+        """
+        :return: a Toffoli gate
+        """
         gate = Gate.X()
         return Gate.MC(gate, num_cb=2)
 
     @staticmethod
     def CSwap():
+        """
+        :return: a controlled swap gate
+        """
         gate = Gate.Swap()
         return Gate.MC(gate, num_cb=1)
 
     @staticmethod
     def CP(theta):
+        """
+        :param theta: phase shift angle in radians
+        :return: a controlled Phase gate
+        """
         gate = Gate.P(theta)
         return Gate.MC(gate, num_cb=1)
 
@@ -335,18 +295,24 @@ class Gate:
         Special gate operations
     """
 
-    # conjugate transpose of matrix
     @staticmethod
     def dg(gate):
+        """
+        :param gate: modification of this
+        :return: conjugate transpose of gate
+        """
         mat = np.matrix.h(gate.mat)
 
         return GateContainer(gate.gate_label, mat, gate.num_cb)
 
-    # multi-targeted gate for single bit gates
-    # num_tb: number of target bits
+
     @staticmethod
     def MT(gate, num_tb):
-
+        """
+        :param gate: target gate
+        :param num_tb: number of target gates
+        :return: a multi-target gate version of a given single bit gate
+        """
         n_qbits_mat = np.log2(gate.mat.shape[0])
         if n_qbits_mat != 1:
             print(f"Error: Gate is not single bit: {n_qbits_mat}")
@@ -358,11 +324,13 @@ class Gate:
 
         return GateContainer(gate.gate_label, mat, 0)
 
-    # multi-controlled gate
-    # num_cb: number of control bits
-    # recursively returns a controlled version of gate.mat
     @staticmethod
     def MC(gate, num_cb):
+        """
+        :param gate: target gate
+        :param num_cb: number of control bits
+        :return: a controlled version of gate recursively
+        """
         control_mat = np.array([[1, 0], [0, 0]])
         target_mat = np.array([[0, 0], [0, 1]])
 

@@ -1,7 +1,6 @@
 import numpy as np
 import sys
-from gate import Gate
-from sim import Sim
+from quantSim import Gate, Sim
 
 
 def demo_basic():

@@ -1,25 +1,30 @@
 ## Project Info
 
-* LSB bit ordering similar to [Qiskit](https://qiskit.org/documentation/tutorials/circuits/3_summary_of_quantum_operations.html#Basis-vector-ordering-in-Qiskit)
-* Gates with control bits have the control bits as the MSBs
+* LSB bit ordering convention similar to [Qiskit](https://qiskit.org/documentation/tutorials/circuits/3_summary_of_quantum_operations.html#Basis-vector-ordering-in-Qiskit)
+* Control bit ordering is contiguous starting from the MSB
 * All qubits are initialized to [0, 1].
 
 ### Currently Implemented Gates
 
-* Identity
+* Identity (I)
 * Pauli (X, Y, Z)
-* Hadamard
+* Hadamard (H)
+* Toffoli
+* Controlled Swap (CSwap)
+* Controlled Phase (CP)
 * Sqrt X (rX)
 * Phase shift: (S, T, Sdg, Tdg)
 * Swap and variations: (sqrt, imaginary)
-* Multi-targeted single bit gates
-* Multi-controlled gates
+* Modified gates:
+    * Conjugate-transpose (dg)
+    * Multi-targeted single bit gates (MT)
+    * Multi-controlled gates (MC)
 * Gates with arguments:
     * Phase shift gate
     * Rotational gates: (Rx, Ry, Rz)
     * Ising Coupling gates: (Rxx, Ryy, Rzz)
 * Custom gates:
-    * Single black box gate created from the current gates in a Sim
+    * Single black box gate created from a Sim
 
 ### Usage
 
@@ -35,4 +40,4 @@
 
 1. Create a Sim with desired gates
 2. Call to_gate() to return a Gate object of the Sim
-3. Can now use Gate in another Sim
+3. Can now use the Gate object in another Sim

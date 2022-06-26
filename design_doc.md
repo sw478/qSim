@@ -13,6 +13,11 @@ This will be mainly used as practice for coding and as a learning experience for
         * Identity
         * Pauli (X, Y, Z)
         * Hadamard
+        * Controlled Not
+        * Toffoli
+        * Controlled Swap
+        * Controlled Phase
+        * Square root of X
         * Phase shift: (S, T, Sdg, Tdg)
         * Swap and variations: (sqrt, imaginary)
     * Multi-targeted single bit gates
@@ -46,16 +51,9 @@ Types of testcases:
 * Statevector consistent with probability distribution in a Sim
 * Correct statevector throughout a Sim
 
-### Error checking
-
-List of common things needed to be checked:
-* check_size(): ensures the size of a matrix corresponds to the correct number of qubits
-* check_set(): ensures "i_qbits" lists are a set
-* check_valid_i_qbits(): ensures "i_qbits" values are valid (lower than n_qbits)
-
 ### Future Work
 
-* Support for classical bits and gates
-* Support custom initial statevector in Sims
+* Support for classical bits and classical gates
+* Support custom initial statevector
 * Enable reuse of array of swap matrices when growing
 * Add more gates and demos
