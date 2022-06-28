@@ -1,6 +1,7 @@
 import numpy as np
 import sys
 import pytest
+import pytest_runner
 from quantSim import *
 
 """

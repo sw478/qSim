@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="quantSim",
-    version="0.1.0",
+    version="0.1.2",
     description="Classical Simulator of Quantum Circuits",
     url="https://https://github.com/sw478/qSim",
     author="Silas Wong",
@@ -19,7 +19,10 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent"
     ],
-    packages=["quantSim"],
+    packages=find_packages(include=['quantSim']),
     include_package_data=True,
-    install_requires=["numpy", "dataclasses", "pytest"],
+    install_requires=["numpy", "dataclasses"],
+    setup_requires=["pytest", "pytest-runner"],
+    tests_require=["pytest", "pytest-runner"],
+    test_suite='quantSim_tests',
 )
